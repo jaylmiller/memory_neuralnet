@@ -31,18 +31,18 @@ class Alcove:
         self.a_lrate = a_lrate
 
         # Hidden layer
-        self.node_vectors = np.matrix(np.random.normal(loc=0, scale=1/np.sqrt(self.hidden_size),
-                                            size=(self.hidden_size,self.input_size)))
+        self.node_vectors = np.random.normal(loc=0, scale=1/np.sqrt(self.hidden_size),
+                                            size=(self.hidden_size,self.input_size))
         # Input nodes
-        self.stimulus_nodes = np.matrix(np.zeros(self.input_size))
+        self.stimulus_nodes = np.zeros(self.input_size)
         # vector of "attention strengths"
-        self.att_strengths = np.matrix(np.zeros(self.input_size))
+        self.att_strengths = np.zeros(self.input_size)
         # matrix of "association weights"
-        self.assoc_weights = np.matrix(np.zeros((self.output_size, self.hidden_size)))
+        self.assoc_weights = np.zeros((self.output_size, self.hidden_size))
         # activations
-        self.a_in = np.matrix(np.zeros(self.input_size))
-        self.a_hid = np.matrix(np.zeros(self.hidden_size))
-        self.a_out = np.matrix(np.zeros(self.output_size))
+        self.a_in = np.zeros(self.input_size)
+        self.a_hid = np.zeros(self.hidden_size)
+        self.a_out = np.zeros(self.output_size)
 
 
 
@@ -64,7 +64,7 @@ class Alcove:
         """
         self.t_val = self.teacher_values(correct_output)
         error = self.error()
-        #delta_assoc = self.assoc_learn()
+        delta_assoc = self.assoc_learn()
         
     def assoc_learn(self):
         # convert ndarrays into matrices
@@ -73,8 +73,8 @@ class Alcove:
         
 
 
-        #return np.dot(np.multiply(self.o_lrate, np.subtract(t_val, a_out)),
-        #            self.a_hid)
+        return np.dot(np.multiply(self.o_lrate, np.subtract(t_val, a_out)),
+                    self.a_hid)
 
 
 
@@ -110,19 +110,19 @@ class Alcove:
         c,r,q = self.param
         # separated the terms out to make it easier to read
         att_strengths = self.att_strengths.T
-        
         hidd_layer_minus_a_in_sqred = np.power(np.subtract(self.node_vectors, self.a_in), r).T
-        dot_prod_sqrt = np.power(np.dot(att_strengths.T, hidd_layer_minus_a_in_sqred), float(q)/r)
+        dot_prod_sqrt = np.power(np.dot(att_strengths, hidd_layer_minus_a_in_sqred), float(q)/r)
         self.a_hid = np.exp(np.multiply(-c,  dot_prod_sqrt)).T
 
     def category_activation_function(self):
-        self.a_out = np.dot(self.a_hid.T, self.assoc_weights.T)
+        self.a_out = np.dot(self.a_hid, self.assoc_weights.T)
+        print self.a_out
 
 def main():
     """ Testing """
 
     test = Alcove(5, 2, 10, 1, 2, 1)
-    input_vector = np.matrix(np.zeros(5))
+    input_vector = np.zeros(5).T
     correct_output = np.matrix([1, 0])
     test.forward_pass(input_vector)
     test.backward_pass(correct_output)
