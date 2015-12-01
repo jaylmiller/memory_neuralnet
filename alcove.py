@@ -4,17 +4,14 @@ Author: Jason Yim
 import numpy as np
 import math
 
-
 """
-TO DO:
-1. change all ndarrays into matrices at very beginning
+Need to implement learning for attention strengths
 """
-
 
 class Alcove:
 
     def __init__(self, input_size, output_size, hidden_size, 
-            spec, r, q, o_lrate = 0.1, a_lrate = 0.1):
+            spec = 1, r = 1, q = 1, o_lrate = 0.1, a_lrate = 0.1):
         """
         args:
             input_size - size of input vectors
@@ -64,18 +61,20 @@ class Alcove:
         """
         self.t_val = self.teacher_values(correct_output)
         error = self.error()
-        #delta_assoc = self.assoc_learn()
+        delta_assoc = self.assoc_learn()
+        delta_atten = self.atten_learn()
         
     def assoc_learn(self):
-        # convert ndarrays into matrices
-        t_val = np.matrix(self.t_val)
-        a_out = np.matrix(self.a_out)
-        
+    	""" Compute delta for association weights """
+        return np.dot(np.multiply(self.o_lrate, np.subtract(self.t_val, self.a_out)).T,
+                    self.a_hid.T)
 
+    def atten_learn(self):
+    	""" Compute delta for attention weights """
 
-        #return np.dot(np.multiply(self.o_lrate, np.subtract(t_val, a_out)),
-        #            self.a_hid)
-
+    	# compute each term separately for readability
+    	err_deriv = np.dot((self.t_val - self.a_out), self.assoc_weights)
+    	ughhh = self.a_hid
 
 
     def error(self):
@@ -88,18 +87,17 @@ class Alcove:
         and the current activation of the
         output units
         """
-        a_c_out = np.append(np.matrix(self.a_out),cout,axis=0)
+        a_c_out = np.append(self.a_out,cout,axis=0)
         w,l = a_c_out.shape
-        t_values = np.zeros(l)
+        t_values = np.matrix(np.zeros(l))
         ones_bit_mask = np.ones(2).T
         zeros_bit_mask = np.zeros(2).T
-
         for i in range(l):
             col = a_c_out[:,i]
             if np.array_equal(np.subtract(col,ones_bit_mask), zeros_bit_mask):
-                t_values[i] = max(col[0], 1)
+                t_values[0,i] = max(col[0], 1)
             else:
-                t_values[i] = min(col[0], -1)
+                t_values[0,i] = min(col[0], -1)
         return t_values
 
 
@@ -114,6 +112,9 @@ class Alcove:
         hidd_layer_minus_a_in_sqred = np.power(np.subtract(self.node_vectors, self.a_in), r).T
         dot_prod_sqrt = np.power(np.dot(att_strengths.T, hidd_layer_minus_a_in_sqred), float(q)/r)
         self.a_hid = np.exp(np.multiply(-c,  dot_prod_sqrt)).T
+
+        # calculate net inputs
+
 
     def category_activation_function(self):
         self.a_out = np.dot(self.a_hid.T, self.assoc_weights.T)
