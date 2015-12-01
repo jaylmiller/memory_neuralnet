@@ -1,7 +1,6 @@
 from core_components import *
 from global_utils import *
 from autoencoder import *
-from alcove import *
 import numpy as np
 import math
 
@@ -17,7 +16,7 @@ algorithm, and testing algorithm.
 
 feature_dim = 50 # fairly arbitrary for now
 memory_space = 50 # fairly arbitrary for now
-lrate = 0.1 # arbitrary
+I_lrate = 0.1 # arbitrary
 
 ipats, tpats = load_data('dataset1.txt')
 
@@ -49,7 +48,7 @@ See http://neuralnetworksanddeeplearning.com/chap3.html#weight_initialization
 W_iraw = np.random.normal(loc=0, scale=1/np.sqrt(feature_dim), 
                           size=(feature_dim,INPUT_LENGTH*26))
 B_i = np.random.normal(loc=0, scale=1, size=(feature_dim, 1))
-W_oi = np.random.normal(loc=0, scale=1/np.sqrt(feature_dim), 
+W_oi = np.random.normal(loc=0, scale=1/np.sqrt(feature_dim),
                          size=(feature_dim,feature_dim))
 B_o = np.random.normal(loc=0, scale=1, size=(feature_dim, 1))
 W_om = np.random.normal(loc=0, scale=1/np.sqrt(feature_dim), 
@@ -94,7 +93,7 @@ def forward_pass(ipat):
 
 
 def backward_pass(tpat,error):
-    """ Following the back propagation algorithm form lab5c
+    """ Perorm backpropagation
     """
 
     global W_oi
@@ -106,15 +105,19 @@ def backward_pass(tpat,error):
     # calculate deltas
     delta_r = np.multiply(np.multiply(error, r_comp.units), 1-r_comp.units)
     delta_o = np.multiply(np.multiply(np.dot(np.transpose(W_ro), delta_r), o_comp.units),(1-o_comp.units))
-    W_delta_ro = np.dot(np.multiply(lrate, delta_r), o_comp.units.T)
-    W_delta_oi = np.dot(np.multiply(lrate, delta_o), i_comp.units.T)
 
+    # deltas for weights
+    W_delta_ro = np.dot(np.multiply(I_lrate, delta_r), o_comp.units.T)
+    W_delta_oi = np.dot(np.multiply(I_lrate, delta_o), i_comp.units.T)
+
+    # update weights
     W_oi = W_oi + W_delta_oi
-    #W_ro = W_ro + W_delta_ro
+    W_ro = W_ro + W_delta_ro
 
 
 def train(ipat, tpat, nepochs):
-    """ Performs training
+    """ Performs training given input patterns ipat and
+    test patterns tpat. "nepochs" denotes the number of epochs.
     """
     size = len(ipats)
     terr = 0
@@ -128,14 +131,14 @@ def train(ipat, tpat, nepochs):
             forward_pass(ipat)
             error = tpat - r_comp.units
             # Using sum of squares error
-            epocherr = math.pow(np.matrix.sum(error),2) + epocherr
+            epocherr = math.pow(np.matrix.sum(error),2)/2 + epocherr
             backward_pass(tpat,error)
         print "Epoch #" + str(n+1) + " error: " + str(epocherr)
         terr = terr + epocherr
     print "Total error: " + str(terr)
 
 def main():
-    train(ipats,tpats, 10)
+    train(ipats,tpats, 50)
         
 
 if __name__ == "__main__":
