@@ -5,7 +5,9 @@ import numpy as np
 import math
 
 """
-Need to implement learning for attention strengths
+Should check linear algebra later to make sure that they're
+correct. Also don't forget to change the random sampling
+distribution.
 """
 
 class Alcove:
@@ -63,6 +65,7 @@ class Alcove:
         error = self.error()
         delta_assoc = self.assoc_learn()
         delta_atten = self.atten_learn()
+        print delta_atten.shape
         
     def assoc_learn(self):
     	""" Compute delta for association weights """
@@ -72,9 +75,16 @@ class Alcove:
     def atten_learn(self):
     	""" Compute delta for attention weights """
 
+        c,r,q = self.param
+
     	# compute each term separately for readability
     	err_deriv = np.dot((self.t_val - self.a_out), self.assoc_weights)
-    	ughhh = self.a_hid
+        hidd_layer_minus_a_in_sqred = np.power(np.subtract(self.node_vectors, self.a_in), r).T
+        net_hid = np.power(np.dot(self.att_strengths, hidd_layer_minus_a_in_sqred), 1/float(r))
+        net_hid_pow = np.power(net_hid, float(q)-r)
+        first_half = np.multiply(err_deriv.T, np.multiply(np.multiply(np.multiply(self.a_hid, c), 
+            float(q)/r),net_hid_pow.T))
+        return np.dot(first_half.T, hidd_layer_minus_a_in_sqred.T)
 
 
     def error(self):
@@ -121,7 +131,7 @@ class Alcove:
 
 def main():
     """ Testing """
-
+    # these test patterns will generate lots of errors because of the zeros
     test = Alcove(5, 2, 10, 1, 2, 1)
     input_vector = np.matrix(np.zeros(5))
     correct_output = np.matrix([1, 0])
