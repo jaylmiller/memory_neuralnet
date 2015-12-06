@@ -11,6 +11,10 @@ a class.
 Author: Jason Yim
 """
 
+"""
+Oops reminder to add activation function
+"""
+
 
 class memory_network:
 
