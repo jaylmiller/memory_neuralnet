@@ -7,7 +7,10 @@ import sys
 """
 A class version of the memory network.
 Basically everything in network.py in 
-a class.
+a class. This class deviates from the
+memory network presented in the paper
+to only satisfy the needs of our project
+
 Author: Jason Yim
 """
 

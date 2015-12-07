@@ -54,7 +54,7 @@ class deepNN:
             an input vector.
         """
         if (input.shape != self.input.shape):
-            print "input dimension does not match"
+            print "Input dimension does not match"
 
         self.input = input
         self.hidden = self.activ_func(np.dot(self.W_hi, self.input) + self.B_h)
