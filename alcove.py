@@ -35,10 +35,12 @@ class alcove:
         self.stimulus_nodes = np.matrix(np.zeros(self.input_size)).T
         # vector of "attention strengths"
         #self.att_strengths = np.matrix(np.zeros(self.input_size)).T
-        self.att_strengths = np.matrix(np.random.normal(loc=0,scale=1,size=(self.input_size))).T
+        self.att_strengths = np.matrix(
+            np.random.normal(loc=0, scale=1, size=(self.input_size))).T
         # matrix of "association weights"
         #self.assoc_weights = np.matrix(np.zeros((self.output_size, self.hidden_size)))
-        self.assoc_weights = np.matrix(np.random.normal(loc=0,scale=1,size=(self.output_size, self.hidden_size)))
+        self.assoc_weights = np.matrix(
+            np.random.normal(loc=0, scale=1, size=(self.output_size, self.hidden_size)))
         # activations
         self.a_in = np.matrix(np.zeros(self.input_size)).T
         self.a_hid = np.matrix(np.zeros(self.hidden_size)).T
@@ -76,10 +78,10 @@ class alcove:
 
         error = sum_of_squares_error(self.a_out, target_vector)
 
-        """ Had to switch, assoc_learn_sigmoid was not 
+        """ Had to switch, assoc_learn_sigmoid was not
         outputting correct weight matrix """
-        delta_assoc = self.assoc_learn_linear(target_vector)
-        delta_atten = self.atten_learn(target_vector)
+        delta_assoc = self.assoc_learn_sigmoid(target_vector)
+        delta_atten = self.atten_learn_v2(target_vector)
         self.assoc_weights += delta_assoc
         self.att_strengths += delta_atten
         return error
@@ -95,8 +97,9 @@ class alcove:
         """ Added by Jay:
         Compute delta for association weights with sigmoid activation
         """
-        t = np.subtract(np.ones((len(self.a_out),1)), self.a_out)
+        t = np.subtract(np.ones((len(self.a_out), 1)), self.a_out)
         self.gradient_out = np.multiply(self.a_out, t)
+        print "sigmoid"
         print self.a_out.shape
         print t.shape
         print self.gradient_out.shape
@@ -111,10 +114,12 @@ class alcove:
         c, r, q = self.param
 
         # compute each term separately for readability
-        err_deriv = np.dot(np.subtract(target_vector, self.a_out).T, self.assoc_weights)
+        err_deriv = np.dot(
+                           np.subtract(target_vector, self.a_out).T,
+                           self.assoc_weights)
         sqr_diff_hid_in = np.power(np.subtract(self.node_vectors,
                                                self.a_in.T), r)
-        net_hid = np.power(np.dot(sqr_diff_hid_in,self.att_strengths), 1/r)
+        net_hid = np.power(np.dot(sqr_diff_hid_in, self.att_strengths), 1/r)
         net_hid_pow = np.power(net_hid, q-r)
         # break this up into computing a few seperate variables then combine?
         # lots of computations at once, hard to see whats happening
@@ -123,7 +128,7 @@ class alcove:
                                      np.multiply(
                                          np.multiply(self.a_hid, c),
                                          q/r), net_hid_pow))
-        return np.dot(sqr_diff_hid_in.T,first_half)
+        return np.dot(sqr_diff_hid_in.T, first_half)
 
     def atten_learn_v2(self, target_vector):
         """ Simplified and more efficient code than original atten_learn.
@@ -135,10 +140,10 @@ class alcove:
         """
         c, r, q = self.param
         net_hid_pow = np.power(self.net_hid, q-r)
+        scalar = c*(q/r)
         print net_hid_pow.shape
         print self.node_act_norm.shape
         print self.a_hid.shape
-        scalar = c*(q/r)
         gradient_hid = np.dot(self.node_act_norm, net_hid_pow.T)
 
     def error(self):
@@ -151,7 +156,7 @@ class alcove:
         and the current activation of the
         output units.
 
-        UPDATE:
+        update:
         I'm not sure if teacher values are still appropriate so
         I'll leave this method in here just in case.
         -Jay

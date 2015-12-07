@@ -24,7 +24,7 @@ def load_data(binary,ortho):
         bin = np.matrix( map(int,bin_repres.readline().rstrip().split(",")) ).T
         orth = orth_repres.readline().rstrip()
         ipats[orth] = bin
-    return ipats 
+    return ipats
 
 
 def main():
