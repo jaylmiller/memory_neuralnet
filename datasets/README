@@ -1,0 +1,19 @@
+"ipat_present.txt"
+contains the present tense form of verbs
+
+"ipat_past.txt"
+contains the past tense form of verbs
+
+"ipat.txt"
+binary vector representation of the phonological form
+of verbs in present tense.
+
+"tpat.txt"
+binary vector representation of the phonological form of verbs
+in past tense
+
+"ipat_nw_present.txt"
+contains the non words
+
+"ipat_nw.txt"
+binary vector representation of the phonological form of non-words

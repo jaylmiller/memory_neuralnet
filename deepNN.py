@@ -74,8 +74,8 @@ class deepNN:
 
         # calculate deltas
         delta_o = np.multiply(np.multiply(error,self.output),1-self.output)
-        delta_h = np.multiply(np.multiply(np.dot(self.W_oh.T, delta_o), self.output),
-                                                                1-self.output)
+        delta_h = np.multiply(np.multiply(np.dot(self.W_oh.T, delta_o), self.hidden),
+                                                                1-self.hidden)
 
         # deltas for weights
         W_oh_delta = np.dot(np.multiply(self.l_rate, delta_o), self.hidden.T)
@@ -96,7 +96,7 @@ class deepNN:
         size = len(ipats)
         terr = 0
 
-        for (n in range(nepochs)):
+        for n in range(nepochs):
             epocherr = 0
             for i in range(nepochs):
                 ipat = ipats[i]

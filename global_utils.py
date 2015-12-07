@@ -44,7 +44,9 @@ def cross_entropy(output, target):
 
 def sum_of_squares_error(output, target):
     """Sum of squares error function"""
-    return .5*np.sum(np.square(output-target))
+    print np.subtract(output,target)
+    print np.power(np.subtract(output,target),2)
+    return .5*np.sum(np.power(np.subtract(output,target),2))
 
 
 def last_seen(m):
