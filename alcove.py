@@ -34,10 +34,11 @@ class alcove:
         # Input nodes
         self.stimulus_nodes = np.matrix(np.zeros(self.input_size)).T
         # vector of "attention strengths"
-        self.att_strengths = np.matrix(np.zeros(self.input_size)).T
+        #self.att_strengths = np.matrix(np.zeros(self.input_size)).T
+        self.att_strengths = np.matrix(np.random.normal(loc=0,scale=1,size=(self.input_size))).T
         # matrix of "association weights"
-        self.assoc_weights = np.matrix(
-            np.zeros((self.output_size, self.hidden_size)))
+        #self.assoc_weights = np.matrix(np.zeros((self.output_size, self.hidden_size)))
+        self.assoc_weights = np.matrix(np.random.normal(loc=0,scale=1,size=(self.output_size, self.hidden_size)))
         # activations
         self.a_in = np.matrix(np.zeros(self.input_size)).T
         self.a_hid = np.matrix(np.zeros(self.hidden_size)).T
@@ -74,12 +75,10 @@ class alcove:
         """
 
         error = sum_of_squares_error(self.a_out, target_vector)
-        print error
 
         """ Had to switch, assoc_learn_sigmoid was not 
         outputting correct weight matrix """
         delta_assoc = self.assoc_learn_linear(target_vector)
-
         delta_atten = self.atten_learn(target_vector)
         self.assoc_weights += delta_assoc
         self.att_strengths += delta_atten
@@ -185,10 +184,8 @@ class alcove:
 
         self.node_act_norm = np.power(
             np.subtract(self.node_vectors, self.a_in.T), r).T
-
         self.net_hid = np.power(
             np.dot(att_strengths.T, self.node_act_norm), q/r)
-
         self.a_hid = np.exp(np.multiply(-c, self.net_hid)).T
 
     def output_activation_function(self):

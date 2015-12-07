@@ -43,13 +43,14 @@ def main():
     output_size = len(tpats_binaries[0])
 
     canonical = deepNN(input_size, hidden_layer_size,output_size = output_size)
-    memory = alcove(input_size, output_size, exemplar_nodes)
+    memory = alcove(input_size, output_size, exemplar_nodes,r=2)
     memory_net = memory_network(canonical, memory, input_size, output_size)
 
+    #canonical.train(10,ipats_binaries,tpats_binaries) # canonical seems to be doing well, error goes down
 
 
-    error = memory_net.train(ipats_binaries,tpats_binaries,500)
-    print error
+    #error = memory_net.train(ipats_binaries,tpats_binaries,500)
+    #print error
 
 
 

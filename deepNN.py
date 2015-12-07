@@ -87,7 +87,7 @@ class deepNN:
 
         return error
 
-    def train(self, nepochs, print_error = True):
+    def train(self, nepochs,ipats,tpats, print_error = True):
         """
             Performs training given input patterns ipats
             and test patterns tpats. "nepochs" denotes the number
@@ -101,8 +101,8 @@ class deepNN:
             for i in range(nepochs):
                 ipat = ipats[i]
                 tpat = tpats[i]
-                forward_pass(ipat)
-                error = backward_pass(tpat)
+                self.forward_pass(ipat)
+                error = self.backward_pass(tpat)
                 epocherr = math.pow(np.matrix.sum(error),2)/2 + epocherr
             if print_error:
                 print "Epoch #" + str(n+1) + "error: " + str(epocherr)
