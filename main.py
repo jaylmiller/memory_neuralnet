@@ -24,7 +24,7 @@ def load_data(binary,ortho):
         bin = np.matrix( map(int,bin_repres.readline().rstrip().split(",")) ).T
         orth = orth_repres.readline().rstrip()
         ipats[orth] = bin
-    return ipats
+    return ipats 
 
 
 def main():
@@ -44,7 +44,10 @@ def main():
 
     canonical = deepNN(input_size, hidden_layer_size,output_size = output_size)
     memory = alcove(input_size, output_size, exemplar_nodes,r=2)
-    memory_net = memory_network(canonical, memory, input_size, output_size)
+    #memory.train(10,ipats_binaries,tpats_binaries)
+    canonical.train(10,ipats_binaries,tpats_binaries)
+
+    #memory_net = memory_network(canonical, memory, input_size, output_size)
 
     #canonical.train(10,ipats_binaries,tpats_binaries) # canonical seems to be doing well, error goes down
 

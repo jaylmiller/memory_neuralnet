@@ -98,14 +98,14 @@ class deepNN:
 
         for n in range(nepochs):
             epocherr = 0
-            for i in range(nepochs):
+            for i in range(size):
                 ipat = ipats[i]
                 tpat = tpats[i]
                 self.forward_pass(ipat)
                 error = self.backward_pass(tpat)
                 epocherr = math.pow(np.matrix.sum(error),2)/2 + epocherr
             if print_error:
-                print "Epoch #" + str(n+1) + "error: " + str(epocherr)
+                print "Epoch #" + str(n+1) + " error: " + str(epocherr)
             terr = terr + epocherr
         if print_error:
             print "Total error: " + str(terr)
