@@ -28,7 +28,7 @@ def load_data(binary, ortho):
 
 
 def main():
-    hidden_layer_size = 40
+    hidden_layer_size = 20
     exemplar_nodes = 200
 
     ipats = load_data('datasets/ipat.txt', 'datasets/ipat_present.txt')

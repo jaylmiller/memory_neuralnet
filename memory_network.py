@@ -21,7 +21,7 @@ class MemoryNetwork:
     MEMORY_ON = True
 
     def __init__(self, canonical_route, memory_route,
-                 input_size, output_size, l_rate=.1, activ_func=sigmoid):
+                 input_size, output_size, l_rate=.05, activ_func=sigmoid):
         self.canonical_route = canonical_route
         self.memory_route = memory_route
         self.output = np.matrix(np.zeros(output_size)).T
@@ -31,6 +31,8 @@ class MemoryNetwork:
         self.l_rate = l_rate
 
     def forward_pass(self, input):
+        """Forward pass through network.
+        """
         if self.input.shape != input.shape:
             print "Input dimensions do not match"
 
@@ -42,10 +44,18 @@ class MemoryNetwork:
             self.memory_route.forward_pass(input)
             self.output = self.output + self.memory_route.a_out
         self.output = self.activ_func(self.output + self.B_o)
+        # clamp the outputs of the two networks to the output of the
+        # parent network
         self.canonical_route.output = self.output
         self.memory_route.a_out = self.output
 
     def backward_pass(self, target):
+        """Backward pass. Update bias vector for output,
+        call backpropogation on the individual networks.
+
+        Returns:
+            error (sum of squares)
+        """
         if self.output.shape != target.shape:
             print "target/output dimensions do not match"
         error = sum_of_squares_error(self.output, target)
@@ -65,6 +75,8 @@ class MemoryNetwork:
     def train(self, ipats, tpats, nepochs, print_error=True):
         """ Performs training given input patterns ipat and
         test patterns tpat. "nepochs" denotes the number of epochs.
+
+        TODO: Add graphing functionality and other experimental features.
         """
         size = len(ipats)
         terr = 0
@@ -82,16 +94,3 @@ class MemoryNetwork:
         if print_error:
             print "Total error: " + str(terr)
             return terr
-
-
-""" Testing """
-"""
-def main():
-    canonical = deepNN(3,3)
-    memory = alcove(3,3,5)
-    memory_net = memory_network(canonical,memory_network,3,3)
-
-if __name__ == "__main__":
-    main()
-
-"""

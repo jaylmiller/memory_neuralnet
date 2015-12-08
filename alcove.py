@@ -14,7 +14,7 @@ from global_utils import *
 class Alcove:
 
     def __init__(self, input_size, output_size, hidden_size,
-                 spec=1.0, r=1.0, q=1.0, o_lrate=0.1, a_lrate=0.1):
+                 spec=1.0, r=1.0, q=1.0, o_lrate=0.05, a_lrate=0.05):
         """
         args:
             input_size - size of input vectors

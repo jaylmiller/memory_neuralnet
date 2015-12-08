@@ -4,7 +4,14 @@ from global_utils import *
 """
 A single hidden layer, neural network implementation
 To be used as the I -> H -> O route in the
-memory network.
+memory network. Sigmoid activation on the hidden layer
+is assumed as is sigmoid activation on the output layer
+although the sigmoid activation function for the output layer
+is not called inside of this network but instead inside of the
+memory network since the memory network computes the sigmoid
+of the sum of the net output of this network and alcove plus
+its bias vector.
+
 Author: Jason Yim, Jay Miller
 """
 
@@ -12,7 +19,7 @@ Author: Jason Yim, Jay Miller
 class FeedForwardNN:
 
     def __init__(self, input_size, hidden_size,
-                 output_size=0, l_rate=0.1):
+                 output_size=0, l_rate=0.05):
         """
         args:
             input_size - size of input
@@ -44,11 +51,10 @@ class FeedForwardNN:
         # no bias vector on output because it's in the memory_network
 
     def forward_pass(self, input):
-        """
-            Perform a forward pass on the network given
-            an input vector. Don't perform activation function
-            on output, since the memory network does this itself on the
-            sum of the two individual networks.
+        """ Perform a forward pass on the network given
+        an input vector. Don't perform activation function
+        on output, since the memory network does this itself on the
+        sum of the two individual networks.
         """
         if (input.shape != self.input.shape):
             print "Input dimension does not match"
