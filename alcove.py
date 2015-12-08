@@ -1,15 +1,20 @@
 """Specialized implementation of the ALCOVE model (Kruschke 1992)
+Intented to be used as a component of a memory_network object
+(see memory_network.py). An activation function is not applied
+to the output, since the parent memory_network does this, but it
+is assumed by the backprop algorithm that the activation function
+is logistic.
+
 Authors: Jason Yim, Jay Miller
 """
 import numpy as np
-import math
 from global_utils import *
 
 
 class alcove:
 
     def __init__(self, input_size, output_size, hidden_size,
-                 spec=1, r=1, q=1, o_lrate=0.1, a_lrate=0.1):
+                 spec=1, r=1, q=1, o_lrate=0.05, a_lrate=0.05):
         """
         args:
             input_size - size of input vectors
@@ -17,6 +22,8 @@ class alcove:
             hidden_size - size of hidden vectors
             spec - specificity of the node
             r,q - parameters of activation function
+            o_lrate - learning rate for the output layer (association weights)
+            a_lrate - learning rate for the hidden layer (attention weights)
         """
         self.param = (spec, r, q)
         self.input_size = input_size
@@ -25,28 +32,25 @@ class alcove:
         self.o_lrate = o_lrate
         self.a_lrate = a_lrate
 
-        # Hidden layer
-        self.node_vectors = np.matrix(np.random.normal(loc=0,
-                                                       scale=1 /
-                                                       np.sqrt(
-                                                           self.hidden_size),
-                                                       size=(self.hidden_size,
-                                                             self.input_size)))
+        # Hidden layer, random binary vectors
+        self.node_vectors = np.matrix(
+            np.random.randint(2, size=(self.hidden_size, self.input_size)))
+        self.node_vectors = self.node_vectors.astype(float)
         # Input nodes
         self.stimulus_nodes = np.matrix(np.zeros(self.input_size)).T
         # vector of "attention strengths"
-        #self.att_strengths = np.matrix(np.zeros(self.input_size)).T
-        self.att_strengths = np.matrix(np.random.normal(loc=0,scale=1,size=(self.input_size))).T
+        self.att_strengths = np.matrix(
+            np.ones(self.input_size)).T
         # matrix of "association weights"
-        #self.assoc_weights = np.matrix(np.zeros((self.output_size, self.hidden_size)))
-        self.assoc_weights = np.matrix(np.random.normal(loc=0,scale=1,size=(self.output_size, self.hidden_size)))
+        self.assoc_weights = np.matrix(
+            np.random.normal(loc=0,
+                             scale=1/np.sqrt(self.output_size),
+                             size=(self.output_size,
+                                   self.hidden_size)))
         # activations
         self.a_in = np.matrix(np.zeros(self.input_size)).T
         self.a_hid = np.matrix(np.zeros(self.hidden_size)).T
         self.a_out = np.matrix(np.zeros(self.output_size)).T
-        # save net activation of hidden layer during forward pass
-        # for computing gradients during backprop
-        self.net_hid = np.matrix(np.zeros(self.hidden_size))
 
     def forward_pass(self, input_vector):
         """ Perform a forward pass.
@@ -56,66 +60,52 @@ class alcove:
         """
         self.a_in = input_vector
         self.hidden_activation_function()
-        self.output_activation_function()
+        self.output_net()
 
-    def backward_pass(self, target_vector):
+    def backward_pass(self, dE_dOut):
         """ Perform backward pass.
 
         "backward_pass" should be run in conjunction with "forward_pass"
         on the same intput-output pair.
-        UPDATE:
-        Changing the learning rule since we're using sigmoid on the
-        output now. -Jay
 
         args:
-            target_vector - correct vector
-
-        returns:
-            the error
-
+            dE_dOut - the derivative of the error with respect to the output
+                so we can plug in error deriv with entire network instead of
+                just locally
         """
 
-        error = sum_of_squares_error(self.a_out, target_vector)
-
-        """ Had to switch, assoc_learn_sigmoid was not 
-        outputting correct weight matrix """
-        delta_assoc = self.assoc_learn_linear(target_vector)
-        delta_atten = self.atten_learn(target_vector)
+        delta_assoc = self.assoc_learn_sigmoid(dE_dOut)
+        delta_atten = self.atten_learn_sigmoid_jay(dE_dOut)
+        print np.max(np.abs(delta_atten))
         self.assoc_weights += delta_assoc
         self.att_strengths += delta_atten
-        return error
 
-    def assoc_learn_linear(self, target_vector):
-        """ Compute delta for association weights with linear activation
+    def assoc_learn_sigmoid(self, dE_dOut):
+        """ Learn values for updating association weights
         """
-        return np.dot(np.multiply(self.o_lrate, np.subtract(target_vector,
-                                                            self.a_out)),
-                      self.a_hid.T)
+        self.dOut_dNet = np.subtract(np.ones((len(self.a_out), 1)), self.a_out)
+        self.dOut_dNet = np.multiply(self.a_out, self.dOut_dNet)
+        delta = np.multiply(dE_dOut, self.dOut_dNet)
+        return self.o_lrate*np.dot(delta, self.a_hid.T)
 
-    def assoc_learn_sigmoid(self, target_vector):
-        """ Added by Jay:
-        Compute delta for association weights with sigmoid activation
-        """
-        t = np.subtract(np.ones((len(self.a_out),1)), self.a_out)
-        self.gradient_out = np.multiply(self.a_out, t)
-        print self.a_out.shape
-        print t.shape
-        print self.gradient_out.shape
-        diff = np.subtract(target_vector, self.a_out)
-        print diff.shape
-        return self.o_lrate*np.multiply(self.gradient_out, diff)
+    def atten_learn_sigmoid_jason(self, dE_dOut):
+        """ Jason's implementation of attention learning update
+        (slightly updated by Jay, first few lines, to account for sigmoid act.)
 
-    def atten_learn(self, target_vector):
-        """ Compute delta for attention weights using the activation
+        Compute delta for attention weights using the activation
         function described in the original ALCOVE paper
         """
         c, r, q = self.param
-
+        # compute jacobian da_out/da_hid
+        temp = self.dOut_dNet
+        temp = np.squeeze(np.asarray(temp))
+        da_out_da_hid = np.diag(temp)
+        da_out_da_hid = np.dot(da_out_da_hid, self.assoc_weights)
         # compute each term separately for readability
-        err_deriv = np.dot(np.subtract(target_vector, self.a_out).T, self.assoc_weights)
+        err_deriv = np.dot(dE_dOut.T, da_out_da_hid)
         sqr_diff_hid_in = np.power(np.subtract(self.node_vectors,
                                                self.a_in.T), r)
-        net_hid = np.power(np.dot(sqr_diff_hid_in,self.att_strengths), 1/r)
+        net_hid = np.power(np.dot(sqr_diff_hid_in, self.att_strengths), 1/r)
         net_hid_pow = np.power(net_hid, q-r)
         # break this up into computing a few seperate variables then combine?
         # lots of computations at once, hard to see whats happening
@@ -124,23 +114,38 @@ class alcove:
                                      np.multiply(
                                          np.multiply(self.a_hid, c),
                                          q/r), net_hid_pow))
-        return np.dot(sqr_diff_hid_in.T,first_half)
+        return np.dot(sqr_diff_hid_in.T, first_half)
 
-    def atten_learn_v2(self, target_vector):
-        """ Simplified and more efficient code than original atten_learn.
-        This uses values computed during the forward pass
-        instead of recomputing them during the backprop like the other
-        method did.
-
-        -Jay
+    def atten_learn_sigmoid_jay(self, dE_dOut):
+        """ Learn values for updating attention strengths.
+        Modification of derivation in the appendix.
+        Computes dE/dalpha_i = (dE/da_out)(da_out/da_hid)(da_hid/dalpha_i)
+        as in the appendix. (da_out/da_hid) differs because our output
+        activation is nonlinear.
         """
+        # compute jacobian da_out/da_hid
+        temp = self.dOut_dNet
+        temp = np.squeeze(np.asarray(temp))
+        da_out_da_hid = np.diag(temp)
+        da_out_da_hid = np.dot(da_out_da_hid, self.assoc_weights)
+        # t1 is (dE/da_out)(da_out/da_hid)
+        t1 = np.dot(dE_dOut.T, da_out_da_hid)
+        # compute da_hid/dalpha_i
         c, r, q = self.param
-        net_hid_pow = np.power(self.net_hid, q-r)
-        print net_hid_pow.shape
-        print self.node_act_norm.shape
-        print self.a_hid.shape
+        net_hid_pow = np.power(self.net_hid, q-r).T
         scalar = c*(q/r)
-        gradient_hid = np.dot(self.node_act_norm, net_hid_pow.T)
+        temp = np.multiply(self.a_hid, net_hid_pow).T
+        temp = scalar*temp
+        delta_atten = []
+        # compute elementwise like in appendix
+        # (matrixify this later for more speed if needed)
+        for i in range(self.input_size):
+            node_act_norm_i = self.node_act_norm[i, :]
+            dAhid_dAlpha = np.multiply(temp, node_act_norm_i)
+            dot_prod = np.asscalar(np.dot(t1, dAhid_dAlpha.T))
+            delta_atten.append(dot_prod)
+        delta_atten = self.a_lrate*np.array(delta_atten)[:, np.newaxis]
+        return delta_atten
 
     def error(self):
         """Calculates the sum of squares error (when teacher values used)"""
@@ -152,7 +157,7 @@ class alcove:
         and the current activation of the
         output units.
 
-        UPDATE:
+        update:
         I'm not sure if teacher values are still appropriate so
         I'll leave this method in here just in case.
         -Jay
@@ -173,56 +178,19 @@ class alcove:
     def hidden_activation_function(self):
         """ Compute the activation of hidden layer (exemplar nodes)
         Refer to Equaion (1) in Kruschke.
-
-        Note to Jason from Jay:
-            If you store some of the terms computed during
-            the forward pass here, backprop code will be much
-            easier/efficient/readable
         """
         c, r, q = self.param
         # separated the terms out to make it easier to read
         att_strengths = self.att_strengths
-
         self.node_act_norm = np.power(
             np.subtract(self.node_vectors, self.a_in.T), r).T
         self.net_hid = np.power(
             np.dot(att_strengths.T, self.node_act_norm), q/r)
         self.a_hid = np.exp(np.multiply(-c, self.net_hid)).T
 
-    def output_activation_function(self):
-        """Changing this to sigmoid activation. -Jay
+    def output_net(self):
+        """Set self.a_out to the net output so that
+        it can be summed with the output of the other route
+        and then have the activation function applied to their sum.
         """
         self.a_out = np.dot(self.assoc_weights, self.a_hid)
-        self.a_out = sigmoid(self.a_out)
-
-    def train(self,nepochs,ipats,tpats,print_error=True):
-        size = len(ipats)
-        terr = 0
-        for n in range(nepochs):
-            epocherr = 0
-            for i in range(size):
-                ipat = ipats[i]
-                tpat = tpats[i]
-                self.forward_pass(ipat)
-                error = self.backward_pass(tpat)
-                epocherr = error + epocherr
-            if print_error:
-                print "Epoch #" + str(n+1) + " error: " + str(epocherr)
-            terr = terr + epocherr
-        if print_error:
-            print "Total error: " + str(terr)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

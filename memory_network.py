@@ -1,61 +1,72 @@
 import numpy as np
-import math
-import alcove
-import deepNN
-import sys
 from global_utils import *
 
 """
 A class version of the memory network.
-Basically everything in network.py in 
+Basically everything in network.py in
 a class. This class deviates from the
 memory network presented in the paper
 to only satisfy the needs of our project
 
-Author: Jason Yim
+Author: Jason Yim, Jay Miller
 """
 
 """
 NOTES:
 1. Does the same activation function have to be
 used at all steps? What about error function?
+
+2. To test individual routes, set canonical_on,
+memory_on to True/False
 """
 
 
 class memory_network:
 
-    def __init__(self,canonical_route,memory_route,
-        input_size,output_size,activ_func=sigmoid):
-
+    def __init__(self, canonical_route, memory_route,
+                 input_size, output_size, l_rate=.05, activ_func=sigmoid):
         self.canonical_route = canonical_route
         self.memory_route = memory_route
         self.output = np.matrix(np.zeros(output_size)).T
         self.input = np.matrix(np.zeros(input_size)).T
+        self.B_o = np.random.normal(loc=0, scale=1, size=(output_size, 1))
         self.activ_func = activ_func
+        self.l_rate = l_rate
+        # turn off/on the canonical/memory routes
+        self.canonical_on = True
+        self.memory_on = True
 
-    def forward_pass(self,input):
+    def forward_pass(self, input):
         if self.input.shape != input.shape:
             print "Input dimensions do not match"
 
         self.input = input
-        self.canonical_route.forward_pass(input)
-        self.memory_route.forward_pass(input)
-        self.output = self.activ_func(self.canonical_route.output 
-            + self.memory_route.a_out)
+        if self.canonical_on:
+            self.canonical_route.forward_pass(input)
+            self.output = self.output + self.canonical_route.output
+        if self.memory_on:
+            self.memory_route.forward_pass(input)
+            self.output = self.output + self.memory_route.a_out
+        self.output = self.activ_func(self.output + self.B_o)
 
-    def backward_pass(self,target):
+    def backward_pass(self, target):
         if self.output.shape != target.shape:
             print "target/output dimensions do not match"
-        """
-        Perhaps have the error in both backward_passes be the same
-        """
-        error1 = self.canonical_route.backward_pass(target)
-        error2 = self.memory_route.backward_pass(target)
-        error = error1 + error2
+        error = sum_of_squares_error(self.output, target)
+        dE_dOut = target - self.output
+        dOut_dNet = np.subtract(np.ones((len(self.output), 1)), self.output)
+        dOut_dNet = np.multiply(self.output, dOut_dNet)
+        delta_out = np.multiply(dE_dOut, dOut_dNet)
+        # update output bias
+        self.B_o = self.B_o + self.l_rate*delta_out
+        # backprop through both networks
+        if self.canonical_on:
+            self.canonical_route.backward_pass(dE_dOut)
+        if self.memory_on:
+            self.memory_route.backward_pass(dE_dOut)
         return error
 
-
-    def train(self,ipats,tpats,nepochs,print_error=True):
+    def train(self, ipats, tpats, nepochs, print_error=True):
         """ Performs training given input patterns ipat and
         test patterns tpat. "nepochs" denotes the number of epochs.
         """
@@ -65,18 +76,16 @@ class memory_network:
             epocherr = 0
             for i in range(size):
                 ipat = ipats[i]
-                tpat = tpats[i]  
+                tpat = tpats[i]
                 self.forward_pass(ipat)
                 error = self.backward_pass(tpat)
-                # Using sum of squares error
-                epocherr = math.pow(np.matrix.sum(error),2)/2 + epocherr
+                epocherr = epocherr + error
             if print_error:
                 print "Epoch #" + str(n+1) + " error: " + str(epocherr)
             terr = terr + epocherr
         if print_error:
             print "Total error: " + str(terr)
             return terr
-
 
 
 """ Testing """
@@ -90,6 +99,3 @@ if __name__ == "__main__":
     main()
 
 """
-
-
-
