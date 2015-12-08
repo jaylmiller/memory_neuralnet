@@ -14,7 +14,7 @@ from global_utils import *
 class alcove:
 
     def __init__(self, input_size, output_size, hidden_size,
-                 spec=1, r=1, q=1, o_lrate=0.05, a_lrate=0.05):
+                 spec=1.0, r=1.0, q=1.0, o_lrate=0.05, a_lrate=0.05):
         """
         args:
             input_size - size of input vectors
@@ -44,7 +44,7 @@ class alcove:
         # matrix of "association weights"
         self.assoc_weights = np.matrix(
             np.random.normal(loc=0,
-                             scale=1/np.sqrt(self.output_size),
+                             scale=.5,
                              size=(self.output_size,
                                    self.hidden_size)))
         # activations

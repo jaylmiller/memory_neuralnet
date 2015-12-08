@@ -45,7 +45,7 @@ def main():
     memory = alcove(input_size, output_size, exemplar_nodes, r=2)
 
     memory_net = memory_network(canonical, memory, input_size, output_size)
-    memory_net.train(ipats_binaries, tpats_binaries, 200)
+    memory_net.train(ipats_binaries, tpats_binaries, 100)
 
 if __name__ == "__main__":
     main()
