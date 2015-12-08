@@ -1,6 +1,6 @@
-from memory_network import memory_network
-from feedforwardNN import feedforwardNN
-from alcove import alcove
+from memory_network import MemoryNetwork
+from feedforwardNN import FeedForwardNN
+from alcove import Alcove
 import numpy as np
 
 
@@ -28,8 +28,7 @@ def load_data(binary, ortho):
 
 
 def main():
-    # np.seterr(invalid='raise')
-    hidden_layer_size = 10
+    hidden_layer_size = 40
     exemplar_nodes = 200
 
     ipats = load_data('datasets/ipat.txt', 'datasets/ipat_present.txt')
@@ -41,11 +40,15 @@ def main():
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])
 
-    canonical = feedforwardNN(input_size, hidden_layer_size, output_size=output_size)
-    memory = alcove(input_size, output_size, exemplar_nodes, r=2)
+    canonical = FeedForwardNN(input_size, hidden_layer_size,
+                              output_size=output_size)
+    memory = Alcove(input_size, output_size, exemplar_nodes, r=2)
 
-    memory_net = memory_network(canonical, memory, input_size, output_size)
-    memory_net.train(ipats_binaries, tpats_binaries, 100)
+    memory_net = MemoryNetwork(canonical, memory, input_size, output_size)
+    # set both routes on
+    MemoryNetwork.CANONICAL_ON = True
+    MemoryNetwork.MEMORY_ON = True
+    memory_net.train(ipats_binaries, tpats_binaries, 300)
 
 if __name__ == "__main__":
     main()

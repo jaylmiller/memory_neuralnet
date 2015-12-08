@@ -12,19 +12,16 @@ Author: Jason Yim, Jay Miller
 """
 
 """
-NOTES:
-1. Does the same activation function have to be
-used at all steps? What about error function?
-
-2. To test individual routes, set canonical_on,
-memory_on to True/False
+For testing individual routes
 """
 
 
-class memory_network:
+class MemoryNetwork:
+    CANONICAL_ON = True
+    MEMORY_ON = True
 
     def __init__(self, canonical_route, memory_route,
-                 input_size, output_size, l_rate=.05, activ_func=sigmoid):
+                 input_size, output_size, l_rate=.1, activ_func=sigmoid):
         self.canonical_route = canonical_route
         self.memory_route = memory_route
         self.output = np.matrix(np.zeros(output_size)).T
@@ -32,19 +29,16 @@ class memory_network:
         self.B_o = np.random.normal(loc=0, scale=1, size=(output_size, 1))
         self.activ_func = activ_func
         self.l_rate = l_rate
-        # turn off/on the canonical/memory routes
-        self.canonical_on = False
-        self.memory_on = True
 
     def forward_pass(self, input):
         if self.input.shape != input.shape:
             print "Input dimensions do not match"
 
         self.input = input
-        if self.canonical_on:
+        if MemoryNetwork.CANONICAL_ON:
             self.canonical_route.forward_pass(input)
             self.output = self.output + self.canonical_route.output
-        if self.memory_on:
+        if MemoryNetwork.MEMORY_ON:
             self.memory_route.forward_pass(input)
             self.output = self.output + self.memory_route.a_out
         self.output = self.activ_func(self.output + self.B_o)
@@ -62,9 +56,9 @@ class memory_network:
         # update output bias
         self.B_o = self.B_o + self.l_rate*delta_out
         # backprop through both networks
-        if self.canonical_on:
+        if MemoryNetwork.CANONICAL_ON:
             self.canonical_route.backward_pass(dE_dOut)
-        if self.memory_on:
+        if MemoryNetwork.MEMORY_ON:
             self.memory_route.backward_pass(dE_dOut)
         return error
 

@@ -1,5 +1,4 @@
 import numpy as np
-import math
 from global_utils import *
 
 """
@@ -10,10 +9,10 @@ Author: Jason Yim, Jay Miller
 """
 
 
-class feedforwardNN:
+class FeedForwardNN:
 
     def __init__(self, input_size, hidden_size,
-                 output_size=0, l_rate=0.05):
+                 output_size=0, l_rate=0.1):
         """
         args:
             input_size - size of input
