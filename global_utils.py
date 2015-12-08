@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.special import expit
 
 """Global variables and utility methods.
 
@@ -21,7 +22,8 @@ def string_to_vector(s):
 
 def sigmoid(x):
     """Sigmoid activation function. Works on scalars, vectors, matrices."""
-    return 1.0 / (1.0+np.exp(-1.0*x))
+    return expit(x)
+    # return 1.0 / (1.0+np.exp(-1.0*x))
 
 
 def logit(x):

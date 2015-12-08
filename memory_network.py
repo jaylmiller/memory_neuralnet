@@ -34,7 +34,7 @@ class memory_network:
         self.l_rate = l_rate
         # turn off/on the canonical/memory routes
         self.canonical_on = True
-        self.memory_on = True
+        self.memory_on = False
 
     def forward_pass(self, input):
         if self.input.shape != input.shape:
@@ -48,6 +48,8 @@ class memory_network:
             self.memory_route.forward_pass(input)
             self.output = self.output + self.memory_route.a_out
         self.output = self.activ_func(self.output + self.B_o)
+        self.canonical_route.output = self.output
+        self.memory_route.a_out = self.output
 
     def backward_pass(self, target):
         if self.output.shape != target.shape:

@@ -76,7 +76,6 @@ class alcove:
 
         delta_assoc = self.assoc_learn_sigmoid(dE_dOut)
         delta_atten = self.atten_learn_sigmoid_jay(dE_dOut)
-        print np.max(np.abs(delta_atten))
         self.assoc_weights += delta_assoc
         self.att_strengths += delta_atten
 

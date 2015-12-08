@@ -36,10 +36,11 @@ class feedforwardNN:
         self.activ_func = sigmoid
 
         # weight matrices
-        self.W_hi = np.random.normal(loc=0, scale=1/np.sqrt(hidden_size),
+        self.W_hi = np.random.normal(loc=0, scale=.5,
                                      size=(hidden_size, input_size))
+        print self.W_hi
         self.B_h = np.random.normal(loc=0, scale=1, size=(hidden_size, 1))
-        self.W_oh = np.random.normal(loc=0, scale=1/np.sqrt(hidden_size),
+        self.W_oh = np.random.normal(loc=0, scale=.5,
                                      size=(output_size, hidden_size))
         # no bias vector on output because it's in the memory_network
 
