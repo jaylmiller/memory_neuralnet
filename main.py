@@ -2,6 +2,7 @@ from memory_network import MemoryNetwork
 from feedforwardNN import FeedForwardNN
 from alcove import Alcove
 import numpy as np
+import random
 
 
 def load_data(binary, ortho):
@@ -28,8 +29,10 @@ def load_data(binary, ortho):
 
 
 def main():
+    random.seed(1)
+    np.random.seed(1)
     hidden_layer_size = 20
-    exemplar_nodes = 200
+    exemplar_nodes = 498
 
     ipats = load_data('datasets/ipat.txt', 'datasets/ipat_present.txt')
     tpats = load_data('datasets/tpat.txt', 'datasets/ipat_past.txt')

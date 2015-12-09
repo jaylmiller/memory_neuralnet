@@ -9,6 +9,7 @@ Authors: Jason Yim, Jay Miller
 """
 import numpy as np
 from global_utils import *
+import random
 
 
 class Alcove:
@@ -32,7 +33,13 @@ class Alcove:
         self.o_lrate = o_lrate
         self.a_lrate = a_lrate
 
-        # Hidden layer, random binary vectors
+        # Hidden layer, randomly sample with replacement from ipat_498.txt
+        f = file('datasets/ipat_498.txt', 'r')
+        data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f]
+        random.shuffle(data_vectors)
+        self.node_vectors = np.vstack(tuple(data_vectors[:self.hidden_size]))
+        # print np.vstack((data_vectors[0], data_vectors[1])).shape
+        # self.node_vectors = data_vectors[:self.hidden_size]
         self.node_vectors = np.matrix(
             np.random.randint(2, size=(self.hidden_size, self.input_size)))
         self.node_vectors = self.node_vectors.astype(float)

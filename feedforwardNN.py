@@ -44,7 +44,6 @@ class FeedForwardNN:
         # weight matrices
         self.W_hi = np.random.normal(loc=0, scale=.5,
                                      size=(hidden_size, input_size))
-        print self.W_hi
         self.B_h = np.random.normal(loc=0, scale=1, size=(hidden_size, 1))
         self.W_oh = np.random.normal(loc=0, scale=.5,
                                      size=(output_size, hidden_size))
