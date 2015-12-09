@@ -1,5 +1,5 @@
 from memory_network import MemoryNetwork
-from feedforwardNN import FeedForwardNN
+from feedforwardNN import DirectMappingNN
 from alcove import Alcove
 import numpy as np
 import random
@@ -55,7 +55,6 @@ def main():
     random.seed(1)
     np.random.seed(1)
     load_phoneme_mapping()
-    hidden_layer_size = 30
     exemplar_nodes = 50
 
     ipats = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
@@ -67,8 +66,8 @@ def main():
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])
 
-    canonical = FeedForwardNN(input_size, hidden_layer_size,
-                              output_size=output_size)
+    canonical = DirectMappingNN(input_size,
+                                output_size=output_size)
     memory = Alcove(input_size, output_size, exemplar_nodes, r=2)
 
     memory_net = MemoryNetwork(canonical, memory, input_size, output_size,
