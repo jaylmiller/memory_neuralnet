@@ -3,6 +3,9 @@ from feedforwardNN import FeedForwardNN
 from alcove import Alcove
 import numpy as np
 import random
+from global_utils import load_phoneme_mapping
+from matplotlib import pyplot as plt
+from matplotlib import style
 
 
 def load_data(binary, ortho):
@@ -28,14 +31,35 @@ def load_data(binary, ortho):
     return ipats
 
 
+def plot_error_per_epoch(err_per_epochs, legend_list, error_type):
+    """
+    args:
+        err_per_epochs - should be a list of the different lines to plot
+        legend_list - list of strings naming each line
+        error_type - string containing type of error
+    """
+    plt.figure(facecolor='gray')
+    x = np.array([i for i in range(1, len(err_per_epochs[0])+1)])
+    for err in err_per_epochs:
+        plt.plot(x, err)
+    plt.xlabel("Epoch number")
+    plt.ylabel(error_type)
+    plt.xlim(1, x[-1])
+    plt.legend(legend_list, loc='upper right')
+    plt.show()
+
+
 def main():
+    plt.rcParams['toolbar'] = 'None'
+    style.use('ggplot')
     random.seed(1)
     np.random.seed(1)
-    hidden_layer_size = 20
-    exemplar_nodes = 498
+    load_phoneme_mapping()
+    hidden_layer_size = 30
+    exemplar_nodes = 50
 
-    ipats = load_data('datasets/ipat.txt', 'datasets/ipat_present.txt')
-    tpats = load_data('datasets/tpat.txt', 'datasets/ipat_past.txt')
+    ipats = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
+    tpats = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
@@ -47,11 +71,15 @@ def main():
                               output_size=output_size)
     memory = Alcove(input_size, output_size, exemplar_nodes, r=2)
 
-    memory_net = MemoryNetwork(canonical, memory, input_size, output_size)
+    memory_net = MemoryNetwork(canonical, memory, input_size, output_size,
+                               error_func="cross_entropy")
     # set both routes on
     MemoryNetwork.CANONICAL_ON = True
     MemoryNetwork.MEMORY_ON = True
-    memory_net.train(ipats_binaries, tpats_binaries, 300)
+    memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 200)
+    epe1 = memory_net.err_per_epoch
+    plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
+
 
 if __name__ == "__main__":
     main()

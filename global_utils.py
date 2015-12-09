@@ -7,6 +7,51 @@ If they pop up frequently and are consistent across
 different models then they should be stored here...
 """
 INPUT_LENGTH = 4
+PHONEME_MAPPING = None
+
+
+def load_phoneme_mapping():
+    global PHONEME_MAPPING
+    f = file('datasets/phonemeslabel.csv', 'r')
+    line = f.readline()
+    labels = [c.rsplit()[0] for c in line.split(',')]
+    f1 = file('datasets/phonemespat.csv', 'r')
+    data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f1]
+    PHONEME_MAPPING = {}
+    for i, l in enumerate(labels):
+        PHONEME_MAPPING[l] = data_vectors[i]
+
+
+def most_similar_phoneme_l1(input_vector):
+    min_diff = len(input_vector)
+    most_sim = None
+    for key in PHONEME_MAPPING:
+        p = PHONEME_MAPPING[key]
+        if (p.T == input_vector).all():
+            print "equality"
+            return key
+        diff = input_vector-p.T
+        diff = np.sum(np.abs(diff))
+        if diff <= min_diff:
+            min_diff = diff
+            most_sim = key
+    return most_sim
+
+
+def most_similar_phoneme_dotprod(input_vector):
+    max_sim = 0
+    most_sim = None
+    for key in PHONEME_MAPPING:
+        p = PHONEME_MAPPING[key]
+        if (p.T == input_vector).all():
+            print "equality"
+            return key
+        sim = np.dot(p, input_vector)
+        sim = np.asscalar(sim)
+        if sim >= max_sim:
+            max_sim = sim
+            most_sim = key
+    return most_sim
 
 
 def string_to_vector(s):
@@ -41,7 +86,8 @@ def cross_entropy(output, target):
     """Get cross entropy between ouput and desired target"""
     output = np.array(output)
     target = np.array(target)
-    return -1*np.sum(target * np.log(output) + (1-target) * np.log(1-output))
+    s = -1.0/float(len(output))
+    return s*np.sum(target*np.log(output)+(1-target)*np.log(1-output))
 
 
 def sum_of_squares_error(output, target):

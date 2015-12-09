@@ -21,7 +21,8 @@ class MemoryNetwork:
     MEMORY_ON = True
 
     def __init__(self, canonical_route, memory_route,
-                 input_size, output_size, l_rate=.05, activ_func=sigmoid):
+                 input_size, output_size, l_rate=.05, activ_func=sigmoid,
+                 error_func=sum_of_squares_error):
         self.canonical_route = canonical_route
         self.memory_route = memory_route
         self.output = np.matrix(np.zeros(output_size)).T
@@ -29,6 +30,7 @@ class MemoryNetwork:
         self.B_o = np.random.normal(loc=0, scale=1, size=(output_size, 1))
         self.activ_func = activ_func
         self.l_rate = l_rate
+        self.error_func = error_func
 
     def forward_pass(self, input):
         """Forward pass through network.
@@ -58,9 +60,17 @@ class MemoryNetwork:
         """
         if self.output.shape != target.shape:
             print "target/output dimensions do not match"
-        error = sum_of_squares_error(self.output, target)
+        if self.error_func == "sum_of_squares_error":
+            error = sum_of_squares_error(self.output, target)
+        elif self.error_func == "cross_entropy":
+            error = cross_entropy(self.output, target)
+        else:
+            print "invalid error specified"
+            return
+
         dE_dOut = target - self.output
-        dOut_dNet = np.subtract(np.ones((len(self.output), 1)), self.output)
+        dOut_dNet = np.subtract(np.ones((len(self.output), 1)),
+                                self.output)
         dOut_dNet = np.multiply(self.output, dOut_dNet)
         delta_out = np.multiply(dE_dOut, dOut_dNet)
         # update output bias
@@ -80,6 +90,7 @@ class MemoryNetwork:
         """
         size = len(ipats)
         terr = 0
+        self.err_per_epoch = []
         for n in range(nepochs):
             epocherr = 0
             for i in range(size):
@@ -88,9 +99,29 @@ class MemoryNetwork:
                 self.forward_pass(ipat)
                 error = self.backward_pass(tpat)
                 epocherr = epocherr + error
+            epocherr = epocherr/len(tpat)
             if print_error:
-                print "Epoch #" + str(n+1) + " error: " + str(epocherr)
+                print "Epoch #" + str(n+1) + " average error: " + str(epocherr)
             terr = terr + epocherr
+            self.err_per_epoch.append(epocherr)
         if print_error:
             print "Total error: " + str(terr)
             return terr
+
+    def predict_phonemes(self, input):
+        """Return a string of phonemes for the past tense predicted by the network for
+        a given input (binary vector encoding). Since it is likely
+        that each slot will not be exactly equal to a phoneme encoding,
+        we return the most similar one
+        in the list of phoneme codings.
+
+        Note there are two different similarity metrics,
+        l1-norm and dot product. Currently using l1-norm
+        but should play around with this later...
+        """
+        self.forward_pass(input)
+        out = np.rint(self.output)
+        print out
+        prediction_vectors = [out[i:i+16] for i in range(0, 160, 16)]
+        phonemes = [most_similar_phoneme_l1(v) for v in prediction_vectors]
+        return " ".join(phonemes)

@@ -33,9 +33,10 @@ class Alcove:
         self.o_lrate = o_lrate
         self.a_lrate = a_lrate
 
-        # Hidden layer, randomly sample with replacement from ipat_498.txt
-        f = file('datasets/ipat_498.txt', 'r')
+        # Hidden layer, randomly sample with replacement from data
+        f = file('datasets/ipat_484.txt', 'r')
         data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f]
+        data_vectors = data_vectors[:100]
         random.shuffle(data_vectors)
         self.node_vectors = np.vstack(tuple(data_vectors[:self.hidden_size]))
         # print np.vstack((data_vectors[0], data_vectors[1])).shape
@@ -82,9 +83,13 @@ class Alcove:
         """
 
         delta_assoc = self.assoc_learn_sigmoid(dE_dOut)
-        delta_atten = self.atten_learn_sigmoid_jay(dE_dOut)
+        # delta_atten = self.atten_learn_sigmoid_jay(dE_dOut)
+        delta_atten2 = self.atten_learn_sigmoid_jason(dE_dOut)
+        # print np.max(np.abs(delta_atten2))
+        # if (delta_atten == delta_atten2).all():
+        #    print "equal"
         self.assoc_weights += delta_assoc
-        self.att_strengths += delta_atten
+        self.att_strengths += delta_atten2
 
     def assoc_learn_sigmoid(self, dE_dOut):
         """ Learn values for updating association weights
