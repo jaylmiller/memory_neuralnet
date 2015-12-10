@@ -1,49 +1,50 @@
 import numpy as np
 from scipy.special import expit
 
-"""Global variables and utility methods.
-
-If they pop up frequently and are consistent across
-different models then they should be stored here...
+"""Global utility methods.
 """
-INPUT_LENGTH = 4
-PHONEME_MAPPING = None
 
 
 def load_phoneme_mapping():
-    global PHONEME_MAPPING
+    global phoneme_mapping
     f = file('datasets/phonemeslabel.csv', 'r')
     line = f.readline()
     labels = [c.rsplit()[0] for c in line.split(',')]
     f1 = file('datasets/phonemespat.csv', 'r')
     data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f1]
-    PHONEME_MAPPING = {}
+    phoneme_mapping = {}
     for i, l in enumerate(labels):
-        PHONEME_MAPPING[l] = data_vectors[i]
+        phoneme_mapping[l] = data_vectors[i]
+    return phoneme_mapping
 
 
-def most_similar_phoneme_l2(input_vector):
+def most_similar_phoneme_l2(input_vector, phoneme_mapping):
+    """ Get most similar phenome vector to input vector
+    similarity = l2 norm
+    """
     min_diff = len(input_vector)
     most_sim = None
-    for key in PHONEME_MAPPING:
-        p = PHONEME_MAPPING[key]
+    for key in phoneme_mapping:
+        p = phoneme_mapping[key]
         if (p.T == input_vector).all():
             print "equality"
             return key
-        squared = np.pow(input_vector-p.T, 2)
-        root = np.sqrt(squared)
-        diff = np.sum(np.abs(diff))
+        squares = np.power(input_vector-p.T, 2)
+        diff = np.sqrt(np.sum(squares))
         if diff <= min_diff:
             min_diff = diff
             most_sim = key
     return most_sim
 
 
-def most_similar_phoneme_l1(input_vector):
+def most_similar_phoneme_l1(input_vector, phoneme_mapping):
+    """ Get most similar phenome vector to input vector
+    similarity = l1 norm
+    """
     min_diff = len(input_vector)
     most_sim = None
-    for key in PHONEME_MAPPING:
-        p = PHONEME_MAPPING[key]
+    for key in phoneme_mapping:
+        p = phoneme_mapping[key]
         if (p.T == input_vector).all():
             print "equality"
             return key
@@ -51,22 +52,6 @@ def most_similar_phoneme_l1(input_vector):
         diff = np.sum(np.abs(diff))
         if diff <= min_diff:
             min_diff = diff
-            most_sim = key
-    return most_sim
-
-
-def most_similar_phoneme_dotprod(input_vector):
-    max_sim = 0
-    most_sim = None
-    for key in PHONEME_MAPPING:
-        p = PHONEME_MAPPING[key]
-        if (p.T == input_vector).all():
-            print "equality"
-            return key
-        sim = np.dot(p, input_vector)
-        sim = np.asscalar(sim)
-        if sim >= max_sim:
-            max_sim = sim
             most_sim = key
     return most_sim
 
@@ -159,4 +144,7 @@ def load_data(data_set):
     return ipats, tpats
 
 if __name__ == "__main__":
-    print string_to_vector("yoyo")
+    m = load_phoneme_mapping()
+    v = np.matrix(
+                  np.random.randint(2, size=(16, 1)))
+    print most_similar_phoneme_l2(v, m)
