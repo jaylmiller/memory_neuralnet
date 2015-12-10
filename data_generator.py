@@ -29,6 +29,17 @@ def create_distribution():
     return freq_sequence
 
 def get_regular_verbs(file_data,past=False):
+    """ Creates a dictionary containing all regular verbs
+    with their binary encodings
+
+    args:
+        file_data - file containing words and their encodings
+        past -  if true then get the past tense of the regular verbs,
+                if false then get present tense of regular verbs
+    returns
+        regular_verbs - dictionary containing orthographic and 
+                        phonetic representation of the regulars
+    """
     f = file('datasets/verblist_freqs.csv','r')
     regular_verbs = {}
     index_counter = 0
@@ -43,6 +54,17 @@ def get_regular_verbs(file_data,past=False):
     return regular_verbs
 
 def get_irregular_verbs(file_data,past=False):
+    """ Creates a dictionary containing all irregular verbs
+    with their binary encodings
+
+    args:
+        file_data - file containing words and their encodings
+        past -  if true then get the past tense of the irregular verbs,
+                if false then get present tense of irregular verbs
+    returns
+        irregular_verbs - dictionary containing orthographic and 
+                        phonetic representation of the irregulars
+    """
     f = file('datasets/verblist_freqs.csv','r')
     irregular_verbs = {}
     for line in f:
@@ -56,6 +78,17 @@ def get_irregular_verbs(file_data,past=False):
     return irregular_verbs
 
 def get_all_verbs(file_data,past=False):
+    """ Creates a dictionary containing all verbs
+    with their binary encodings
+
+    args:
+        file_data - file containing words and their encodings
+        past -  if true then get the past tense of all verbs,
+                if false then get present tense of all verbs
+    returns
+        irregular_verbs - dictionary containing orthographic and 
+                        phonetic representation of all verbs
+    """
     f = file('datasets/verblist_freqs.csv','r')
     all_verbs = {}
     for line in f:
