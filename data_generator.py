@@ -25,7 +25,28 @@ def create_distribution():
     freq_sequence = np.array(freq_sequence)
     # normalize
     freq_sequence = freq_sequence/freq_sequence[-1]
+    f.close()
     return freq_sequence
+
+def get_regular_verbs():
+    f = file('datasets/verblist_freqs.csv','r')
+    regular_verbs = []
+    for line in f:
+        vals = [i.rstrip() for i in line.split(',')]
+        if vals[-3] == "0":
+            regular_verbs.append(vals[0])
+    f.close()
+    return regular_verbs
+
+def get_irregular_verbs():
+    f = file('datasets/verblist_freqs.csv','r')
+    irregular_verbs = []
+    for line in f:
+        vals = [i.rstrip() for i in line.split(',')]
+        if vals[-3] == "0":
+            irregular_verbs.append(vals[0])
+    f.close()
+    return irregular_verbs
 
 
 def get_indices_from_dist(n, dist):
@@ -71,3 +92,11 @@ def load_data(binary, ortho):
         orth = orth_repres.readline().rstrip()
         ipats[orth] = bin
     return ipats
+
+
+
+
+
+
+
+

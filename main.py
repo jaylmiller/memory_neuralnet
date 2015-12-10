@@ -6,7 +6,7 @@ import random
 from global_utils import load_phoneme_mapping
 from matplotlib import pyplot as plt
 from matplotlib import style
-from word_distribution import *
+from data_generator import *
 
 
 
@@ -30,6 +30,7 @@ def plot_error_per_epoch(err_per_epochs, legend_list, error_type):
 
 
 def main():
+    # Set parameters
     plt.rcParams['toolbar'] = 'None'
     style.use('ggplot')
     random.seed(1)
@@ -39,15 +40,27 @@ def main():
     load_phoneme_mapping()
 
 
+
+
+
+
+
+    # read files
     present_tense_words = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
     past_tense_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
 
+    # get word distribution based on frequency
     distribution = create_distribution()
 
+    regulars = get_regular_verbs()
+    irregulars = get_irregular_verbs()
+
+
+    # get the indices of each word sampled
     indices = get_indices_from_dist(500,distribution)
 
+
     ipats = create_patterns(indices,present_tense_words)
-    print ipats.keys()
     tpats = create_patterns(indices,past_tense_words)
 
     ipats_binaries = ipats.values()
