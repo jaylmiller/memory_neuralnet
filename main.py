@@ -55,7 +55,7 @@ def main():
     random.seed(1)
     np.random.seed(1)
     load_phoneme_mapping()
-    exemplar_nodes = 50
+    exemplar_nodes = 100
 
     ipats = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
     tpats = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
@@ -67,15 +67,17 @@ def main():
     output_size = len(tpats_binaries[0])
 
     canonical = DirectMappingNN(input_size,
-                                output_size=output_size)
-    memory = Alcove(input_size, output_size, exemplar_nodes, r=2)
+                                output_size=output_size,
+                                l_rate=.02)
+    memory = Alcove(input_size, output_size, exemplar_nodes, r=2.0,
+                    o_lrate=.02, a_lrate=.02)
 
     memory_net = MemoryNetwork(canonical, memory, input_size, output_size,
-                               error_func="cross_entropy")
+                               error_func="cross_entropy", l_rate=.02)
     # set both routes on
     MemoryNetwork.CANONICAL_ON = True
     MemoryNetwork.MEMORY_ON = True
-    memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 200)
+    memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
     epe1 = memory_net.err_per_epoch
     plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
 
