@@ -39,11 +39,9 @@ def get_indices_from_dist(n, dist):
     for i in range(n):
         r = np.random.rand()
         condition = (dist <= r)
-        index = np.array(np.where(condition))
-        index = index.squeeze()
-        index = index[-1]
-        indices.append(np.asscalar(index))
+        idx = np.count_nonzero(condition)
+        indices.append(idx - 1)
     return indices
 
 if __name__ == '__main__':
-    print get_indices_from_dist(10, create_distribution())
+    print get_indices_from_dist(1000, create_distribution())
