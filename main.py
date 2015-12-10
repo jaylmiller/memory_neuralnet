@@ -52,16 +52,17 @@ def main():
     # get word distribution based on frequency
     distribution = create_distribution()
 
-    regulars = get_regular_verbs()
-    irregulars = get_irregular_verbs()
+    # get testing sets of regular, irregular verbs
+    regular_ipat = get_regular_verbs(present_tense_words)
+    regular_tpat = get_regular_verbs(past_tense_words, past=True)
+    irregular_ipat = get_irregular_verbs(present_tense_words)
+    irregular_tpat = get_irregular_verbs(past_tense_words,past=True)
+    # get testing sets of all verbs
+    all_verbs_ipat = get_all_verbs(preset_tense_words)
+    all_verbs_tpat = get_all_verbs(past_tense_words,past=True)
 
-
-    # get the indices of each word sampled
-    indices = get_indices_from_dist(500,distribution)
-
-
-    ipats = create_patterns(indices,present_tense_words)
-    tpats = create_patterns(indices,past_tense_words)
+    ipats = create_patterns(500, distribution, present_tense_words)
+    tpats = create_patterns(500, distribution, past_tense_words)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()

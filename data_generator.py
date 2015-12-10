@@ -1,6 +1,6 @@
-"""For sampling words according to their frequency data
+"""Creates the data sets needed to train/test our model
 
-Author: Jay Miller
+Author: Jay Miller, Jason Yim
 """
 
 import numpy as np
@@ -28,25 +28,44 @@ def create_distribution():
     f.close()
     return freq_sequence
 
-def get_regular_verbs():
+def get_regular_verbs(file_data,past=False):
     f = file('datasets/verblist_freqs.csv','r')
-    regular_verbs = []
+    regular_verbs = {}
+    index_counter = 0
     for line in f:
         vals = [i.rstrip() for i in line.split(',')]
         if vals[-3] == "0":
-            regular_verbs.append(vals[0])
+            if past:
+                regular_verbs[vals[1].lower()] = file_data[vals[1].lower()]
+            else:
+                regular_verbs[vals[0].lower()] = file_data[vals[0].lower()]
     f.close()
     return regular_verbs
 
-def get_irregular_verbs():
+def get_irregular_verbs(file_data,past=False):
     f = file('datasets/verblist_freqs.csv','r')
-    irregular_verbs = []
+    irregular_verbs = {}
     for line in f:
         vals = [i.rstrip() for i in line.split(',')]
-        if vals[-3] == "0":
-            irregular_verbs.append(vals[0])
+        if vals[-3] == "1":
+            if past:
+                irregular_verbs[vals[1].lower()] = file_data[vals[1].lower()]
+            else:
+                irregular_verbs[vals[0].lower()] = file_data[vals[0].lower()]
     f.close()
     return irregular_verbs
+
+def get_all_verbs(file_data,past=False):
+    f = file('datasets/verblist_freqs.csv','r')
+    all_verbs = {}
+    for line in f:
+        vals = [i.rstrip() for i in line.split(',')]
+        if past:
+            all_verbs[vals[1].lower()] = file_data[vals[1].lower()]
+        else:
+            all_verbs[vals[0].lower()] = file_data[vals[0].lower()]
+    f.close()
+    return all_verbs
 
 
 def get_indices_from_dist(n, dist):
@@ -64,12 +83,22 @@ def get_indices_from_dist(n, dist):
         indices.append(idx - 1)
     return indices
 
-def create_patterns(indices,words):
-    ipat = {}
-    keys = words.keys()
+def create_patterns(n, dist, file_data):
+    """ Creates training patterns
+    args:
+        n - pattern size
+        dist - distribution of words
+        file_data - file data read in containing words ith vector encodings
+
+    return:
+        ipats - a dictionary containing the words as keys and vector encodings as values
+    """
+    indices = get_indices_from_dist(n,dist);
+    pat = {}
+    keys = file_data.keys()
     for index in indices:
-        ipat[keys[index]] = words[keys[index]]
-    return ipat
+        pat[keys[index]] = file_data[keys[index]]
+    return pat
 
 def load_data(binary, ortho):
     """ Load dataset
