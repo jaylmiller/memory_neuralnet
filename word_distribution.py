@@ -50,3 +50,24 @@ def create_patterns(indices,words):
         ipat[keys[index]] = words[keys[index]]
     return ipat
 
+def load_data(binary, ortho):
+    """ Load dataset
+    binary - binary vector representation of verbs
+    ortho - the words themselves
+
+    return:
+    ipat - a dictionary with the words as keys and binary vectors as values
+    """
+    bin_repres = open(binary)
+    orth_repres = open(ortho)
+    num_lines = sum(1 for line in orth_repres)  # get number of lines
+
+    orth_repres.close()  # highly inefficient, any other way?
+    orth_repres = open(ortho)
+
+    ipats = {}
+    for line in range(num_lines):
+        bin = np.matrix(map(int, bin_repres.readline().rstrip().split(","))).T
+        orth = orth_repres.readline().rstrip()
+        ipats[orth] = bin
+    return ipats

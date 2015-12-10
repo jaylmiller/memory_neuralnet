@@ -9,27 +9,6 @@ from matplotlib import style
 from word_distribution import *
 
 
-def load_data(binary, ortho):
-    """ Load dataset
-    binary - binary vector representation of verbs
-    ortho - the words themselves
-
-    return:
-    ipat - a dictionary with the words as keys and binary vectors as values
-    """
-    bin_repres = open(binary)
-    orth_repres = open(ortho)
-    num_lines = sum(1 for line in orth_repres)  # get number of lines
-
-    orth_repres.close()  # highly inefficient, any other way?
-    orth_repres = open(ortho)
-
-    ipats = {}
-    for line in range(num_lines):
-        bin = np.matrix(map(int, bin_repres.readline().rstrip().split(","))).T
-        orth = orth_repres.readline().rstrip()
-        ipats[orth] = bin
-    return ipats
 
 
 def plot_error_per_epoch(err_per_epochs, legend_list, error_type):
@@ -55,18 +34,21 @@ def main():
     style.use('ggplot')
     random.seed(1)
     np.random.seed(1)
-    load_phoneme_mapping()
     exemplar_nodes = 100
 
-    present_words = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
-    past_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
+    load_phoneme_mapping()
+
+
+    present_tense_words = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
+    past_tense_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
 
     distribution = create_distribution()
 
     indices = get_indices_from_dist(500,distribution)
 
-    ipats = create_patterns(indices,present_words)
-    tpats = create_patterns(indices,past_words)
+    ipats = create_patterns(indices,present_tense_words)
+    print ipats.keys()
+    tpats = create_patterns(indices,past_tense_words)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
@@ -87,9 +69,9 @@ def main():
     # set both routes on
     MemoryNetwork.CANONICAL_ON = True
     MemoryNetwork.MEMORY_ON = True
-    memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
-    epe1 = memory_net.err_per_epoch
-    plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
+    #memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
+    #epe1 = memory_net.err_per_epoch
+    #plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
    
 
 
