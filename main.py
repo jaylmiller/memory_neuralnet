@@ -6,6 +6,7 @@ import random
 from global_utils import load_phoneme_mapping
 from matplotlib import pyplot as plt
 from matplotlib import style
+from word_distribution import *
 
 
 def load_data(binary, ortho):
@@ -57,14 +58,23 @@ def main():
     load_phoneme_mapping()
     exemplar_nodes = 100
 
-    ipats = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
-    tpats = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
+    present_words = load_data('datasets/ipat_484.txt', 'datasets/ipat_484_present.txt')
+    past_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
+
+    distribution = create_distribution()
+
+    indices = get_indices_from_dist(500,distribution)
+
+    ipats = create_patterns(indices,present_words)
+    tpats = create_patterns(indices,past_words)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
 
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])
+
+
 
     canonical = DirectMappingNN(input_size,
                                 output_size=output_size,
@@ -80,6 +90,7 @@ def main():
     memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
     epe1 = memory_net.err_per_epoch
     plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
+   
 
 
 if __name__ == "__main__":
