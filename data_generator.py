@@ -116,22 +116,28 @@ def get_indices_from_dist(n, dist):
         indices.append(idx - 1)
     return indices
 
-def create_patterns(n, dist, file_data):
-    """ Creates training patterns
+def create_patterns(n, dist, file_data_present,file_data_past):
+    """ Creates ipat and tpat training patterns given the data for both 
+    present and past tense verbs.
     args:
         n - pattern size
         dist - distribution of words
-        file_data - file data read in containing words ith vector encodings
+        file_data_present - file data containing present tense words with vector encodings
+        file_data_past - file data containing past tense words with vector encodings
 
     return:
-        ipats - a dictionary containing the words as keys and vector encodings as values
+        ipats - a dictionary containing the present tense verbs as keys and vector encodings as values
+        tpats - a dictionary containing the past tense verbs as keys and vector encodings as values
     """
     indices = get_indices_from_dist(n,dist);
-    pat = {}
-    keys = file_data.keys()
+    ipat = {}
+    tpat = {}
+    present_keys = file_data_present.keys()
+    past_keys = file_data_past.keys()
     for index in indices:
-        pat[keys[index]] = file_data[keys[index]]
-    return pat
+        ipat[present_keys[index]] = file_data_present[present_keys[index]]
+        tpat[past_keys[index]] = file_data_past[past_keys[index]]
+    return [ipat,tpat]
 
 def load_data(binary, ortho):
     """ Load dataset

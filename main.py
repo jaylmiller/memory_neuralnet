@@ -58,19 +58,16 @@ def main():
     irregular_ipat = get_irregular_verbs(present_tense_words)
     irregular_tpat = get_irregular_verbs(past_tense_words,past=True)
     # get testing sets of all verbs
-    all_verbs_ipat = get_all_verbs(preset_tense_words)
+    all_verbs_ipat = get_all_verbs(present_tense_words)
     all_verbs_tpat = get_all_verbs(past_tense_words,past=True)
 
-    ipats = create_patterns(500, distribution, present_tense_words)
-    tpats = create_patterns(500, distribution, past_tense_words)
+    [ipats,tpats] = create_patterns(500, distribution, present_tense_words, past_tense_words)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
 
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])
-
-
 
     canonical = DirectMappingNN(input_size,
                                 output_size=output_size,
@@ -83,9 +80,9 @@ def main():
     # set both routes on
     MemoryNetwork.CANONICAL_ON = True
     MemoryNetwork.MEMORY_ON = True
-    #memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
-    #epe1 = memory_net.err_per_epoch
-    #plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
+    memory_net.train(ipats_binaries[:100], tpats_binaries[:100], 100)
+    epe1 = memory_net.err_per_epoch
+    plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
    
 
 
