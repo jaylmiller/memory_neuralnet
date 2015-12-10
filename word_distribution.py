@@ -42,7 +42,9 @@ def get_indices_from_dist(n, dist):
     for i in range(n):
         r = np.random.rand()
         condition = (dist <= r)
-        index = np.array(np.where(condition)).squeeze()[-1]
+        index = np.array(np.where(condition))
+        index = index.squeeze()
+        index = index[-1]
         indices.append(np.asscalar(index))
     return indices
 

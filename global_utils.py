@@ -22,6 +22,23 @@ def load_phoneme_mapping():
         PHONEME_MAPPING[l] = data_vectors[i]
 
 
+def most_similar_phoneme_l2(input_vector):
+    min_diff = len(input_vector)
+    most_sim = None
+    for key in PHONEME_MAPPING:
+        p = PHONEME_MAPPING[key]
+        if (p.T == input_vector).all():
+            print "equality"
+            return key
+        squared = np.pow(input_vector-p.T, 2)
+        root = np.sqrt(squared)
+        diff = np.sum(np.abs(diff))
+        if diff <= min_diff:
+            min_diff = diff
+            most_sim = key
+    return most_sim
+
+
 def most_similar_phoneme_l1(input_vector):
     min_diff = len(input_vector)
     most_sim = None
