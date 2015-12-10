@@ -25,7 +25,30 @@ def create_distribution():
     freq_sequence = np.array(freq_sequence)
     # normalize
     freq_sequence = freq_sequence/freq_sequence[-1]
-    return freq_sequence
+    return 
+
+
+def load_data(binary, ortho):
+    """ Load dataset
+    binary - binary vector representation of verbs
+    ortho - the words themselves
+
+    return:
+    ipat - a dictionary with the words as keys and binary vectors as values
+    """
+    bin_repres = open(binary)
+    orth_repres = open(ortho)
+    num_lines = sum(1 for line in orth_repres)  # get number of lines
+
+    orth_repres.close()  # highly inefficient, any other way?
+    orth_repres = open(ortho)
+
+    ipats = {}
+    for line in range(num_lines):
+        bin = np.matrix(map(int, bin_repres.readline().rstrip().split(","))).T
+        orth = orth_repres.readline().rstrip()
+        ipats[orth] = bin
+    return ipats
 
 
 def get_indices_from_dist(n, dist):
@@ -43,10 +66,14 @@ def get_indices_from_dist(n, dist):
         indices.append(idx - 1)
     return indices
 
-def create_patterns(indices,words):
+def get_patterns(indices, words):
     ipat = {}
     keys = words.keys()
+    print indices
     for index in indices:
-        ipat[keys[index]] = words[keys[index]]
+        print index
+        ipats[keys.get(index)] = words[index]
     return ipat
 
+#if __name__ == '__main__':
+#    print get_indices_from_dist(1000, create_distribution())
