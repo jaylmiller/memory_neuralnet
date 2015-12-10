@@ -15,15 +15,12 @@ def create_distribution():
     """
 
     f = file('datasets/verblist_freqs.csv', 'r')
-    freq_sequence = []
+    freq_sequence = [0]
     total_freq = 0
     for line in f:
         vals = [i.rstrip() for i in line.split(',')]
         freq = float(vals[-2])
-        if not freq_sequence:
-            freq_sequence.append(freq)
-        else:
-            freq_sequence.append(freq_sequence[-1]+freq)
+        freq_sequence.append(freq_sequence[-1]+freq)
         total_freq = total_freq + freq
     freq_sequence = np.array(freq_sequence)
     # normalize
