@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.special import expit
+import pickle
 
 """Global utility methods.
 """
@@ -143,8 +144,20 @@ def load_data(data_set):
         tpats.append(tpat)
     return ipats, tpats
 
+
+def save_net(name, network):
+    pickle.dump(network, open(str(name), "wb"))
+
+
+def load_net(name):
+    return pickle.load(file(str(name), 'rb'))
+
+
 if __name__ == "__main__":
     m = load_phoneme_mapping()
     v = np.matrix(
                   np.random.randint(2, size=(16, 1)))
     print most_similar_phoneme_l2(v, m)
+
+
+

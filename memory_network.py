@@ -92,6 +92,10 @@ class MemoryNetwork:
         terr = 0
         self.err_per_epoch = []
         for n in range(nepochs):
+            if (n+1) % 50 == 0:
+                print 'saving'
+                s = 'net_at_'+str(n+1)
+                save_net(s, self)
             epocherr = 0
             for i in range(size):
                 ipat = ipats[i]
@@ -108,8 +112,9 @@ class MemoryNetwork:
             print "Total error: " + str(terr)
             return terr
 
+
     def predict_phonemes(self, input):
-        """Return a string of phonemes for the past tense predicted by the network for
+        """ Return a string of phonemes for the past tense predicted by the network for
         a given input (binary vector encoding). Since it is likely
         that each slot will not be exactly equal to a phoneme encoding,
         we return the most similar one
