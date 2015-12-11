@@ -1,5 +1,5 @@
 from memory_network import MemoryNetwork
-from feedforwardNN import DirectMappingNN
+from feedforwardNN import DirectMappingNN, FeedForwardNN
 from alcove import Alcove
 import numpy as np
 import random
@@ -36,8 +36,8 @@ def main():
     random.seed(1)
     np.random.seed(1)
     exemplar_nodes = 100
-    training_size = 500
-    epochs = 100
+    training_size = 1000
+    epochs = 1000
     # benchmark_per = 50 # test at every benchmark_per
 
     phoneme_mapping = load_phoneme_mapping()
@@ -71,17 +71,18 @@ def main():
 
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])
-    net = load_net('net_large_data/net_at_1000')
-    net.train(ipats_binaries, tpats_binaries, 1)
+    net = load_net('net_large_data/net_at_250')
+    # MemoryNetwork.MEMORY_ON = False
+    """ net.train(ipats_binaries, tpats_binaries, 1)
     t = 0
     for i in range(input_size):
         ipat = ipats_binaries[i]
         tpat = tpats_binaries[i]
         t = t + test_accuracy(net, ipat, tpat, phoneme_mapping)
     print t
-    print "accuracy: " + str(float(t)/float(input_size))
+    print "accuracy: " + str(float(t)/float(input_size)) """
 
-    canonical = DirectMappingNN(input_size,
+    canonical = FeedForwardNN(input_size, 20,
                                 output_size=output_size,
                                 l_rate=.02)
     memory = Alcove(input_size, output_size, exemplar_nodes, r=2.0,
@@ -90,8 +91,8 @@ def main():
     memory_net = MemoryNetwork(canonical, memory, input_size, output_size,
                                error_func="cross_entropy", l_rate=.02)
     # set both routes on
-    MemoryNetwork.CANONICAL_ON = True
-    MemoryNetwork.MEMORY_ON = True
+    # MemoryNetwork.CANONICAL_ON = False
+    # MemoryNetwork.MEMORY_ON = False
     memory_net.train(ipats_binaries, tpats_binaries, epochs)
     epe1 = memory_net.err_per_epoch
     plot_error_per_epoch([epe1], ['Dual route'], 'Average cross-entropy')
