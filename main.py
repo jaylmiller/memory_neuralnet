@@ -36,9 +36,9 @@ def main():
     random.seed(1)
     np.random.seed(1)
     exemplar_nodes = 100
-    training_size = 200
-    epochs = 1000
-    benchmark_per = 50 # test at every benchmark_per
+    training_size = 5000
+    epochs = 250
+    # benchmark_per = 50 # test at every benchmark_per
 
     phoneme_mapping = load_phoneme_mapping()
 
@@ -51,8 +51,8 @@ def main():
     past_tense_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
 
     # get word distribution based on frequency
-    distribution = create_distribution(sample_indices=indices)
-
+    # distribution = create_distribution(sample_indices=indices)
+    distribution = create_distribution()
     # get testing sets of regular, irregular verbs
     regular_ipat = get_regular_verbs(present_tense_words)
     regular_tpat = get_regular_verbs(past_tense_words, past=True)
@@ -62,10 +62,12 @@ def main():
     all_verbs_ipat = get_all_verbs(present_tense_words)
     all_verbs_tpat = get_all_verbs(past_tense_words,past=True)
 
-    [ipats,tpats] = create_patterns(training_size, distribution, present_tense_words, past_tense_words, sample_indices=indices)
+    [ipats,tpats] = create_patterns(training_size, distribution, present_tense_words, past_tense_words, sample_indices=None)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
+
+
 
     input_size = len(ipats_binaries[0])
     output_size = len(tpats_binaries[0])

@@ -92,7 +92,7 @@ class MemoryNetwork:
         terr = 0
         self.err_per_epoch = []
         for n in range(nepochs):
-            if (n+1) % 50 == 0:
+            if (n+1) % 1 == 0:
                 print 'saving'
                 s = 'net_at_'+str(n+1)
                 save_net(s, self)

@@ -167,7 +167,27 @@ def load_data(binary, ortho):
     return ipats
 
 
+def test(net, ipats, tpats):
+    """ Calculates the mean accuracy of outputs and their target patterns.
+    Runs ipat through network, calculates the difference of predicted past
+    with its actual past tense. If the difference betweenthe two is more
+    half of the elements in their vector encodings than increment miss.
+    Otherwise we say it's a hit.
 
+    """
+    length = len(ipats)
+    difference = []
+    for i in range(length):
+        net.forward_pass(ipats[i])
+        output = np.round(net.output)
+        difference.append(tpats[i]-output)
+    accuracies = np.absolute(difference)
+    miss = 0
+    for v in accuracies:
+        if np.sum(v) >= len(v)/2:
+            miss += 1
+
+    return float(1-miss/length)
 
 
 
