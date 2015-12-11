@@ -6,7 +6,7 @@ Author: Jay Miller, Jason Yim
 import numpy as np
 
 
-def create_distribution():
+def create_distribution(sample_indices=None):
     """ Create the probability distribution.
 
     returns:
@@ -17,7 +17,9 @@ def create_distribution():
     f = file('datasets/verblist_freqs.csv', 'r')
     freq_sequence = [0]
     total_freq = 0
-    for line in f:
+    for idx, line in enumerate(f):
+        if sample_indices is not None and (idx == sample_indices).any():
+            continue
         vals = [i.rstrip() for i in line.split(',')]
         freq = float(vals[-2])
         freq_sequence.append(freq_sequence[-1]+freq)
@@ -37,7 +39,7 @@ def get_regular_verbs(file_data,past=False):
         past -  if true then get the past tense of the regular verbs,
                 if false then get present tense of regular verbs
     returns
-        regular_verbs - dictionary containing orthographic and 
+        regular_verbs - dictionary containing orthographic and
                         phonetic representation of the regulars
     """
     f = file('datasets/verblist_freqs.csv','r')
@@ -62,7 +64,7 @@ def get_irregular_verbs(file_data,past=False):
         past -  if true then get the past tense of the irregular verbs,
                 if false then get present tense of irregular verbs
     returns
-        irregular_verbs - dictionary containing orthographic and 
+        irregular_verbs - dictionary containing orthographic and
                         phonetic representation of the irregulars
     """
     f = file('datasets/verblist_freqs.csv','r')
@@ -86,7 +88,7 @@ def get_all_verbs(file_data,past=False):
         past -  if true then get the past tense of all verbs,
                 if false then get present tense of all verbs
     returns
-        irregular_verbs - dictionary containing orthographic and 
+        irregular_verbs - dictionary containing orthographic and
                         phonetic representation of all verbs
     """
     f = file('datasets/verblist_freqs.csv','r')
@@ -101,7 +103,7 @@ def get_all_verbs(file_data,past=False):
     return all_verbs
 
 
-def get_indices_from_dist(n, dist):
+def get_indices_from_dist(n, dist, sample_indices=None):
     """ Get randomly sampled indices according to distribution
 
     args:
@@ -113,11 +115,14 @@ def get_indices_from_dist(n, dist):
         r = np.random.rand()
         condition = (dist <= r)
         idx = np.count_nonzero(condition)
-        indices.append(idx - 1)
+        if sample_indices is None:
+            indices.append(idx - 1)
+        else:
+            indices.append(sample_indices[idx - 1])
     return indices
 
-def create_patterns(n, dist, file_data_present,file_data_past):
-    """ Creates ipat and tpat training patterns given the data for both 
+def create_patterns(n, dist, file_data_present,file_data_past, sample_indices=None):
+    """ Creates ipat and tpat training patterns given the data for both
     present and past tense verbs.
     args:
         n - pattern size

@@ -35,12 +35,15 @@ def main():
     style.use('ggplot')
     random.seed(1)
     np.random.seed(1)
-    exemplar_nodes = 500
-    training_size = 1000
+    exemplar_nodes = 100
+    training_size = 200
     epochs = 1000
     benchmark_per = 50 # test at every benchmark_per
 
     phoneme_mapping = load_phoneme_mapping()
+
+    indices = np.random.permutation(np.linspace(0, 483, 484))
+    indices = indices[0:100]
 
 
     # read files
@@ -48,7 +51,7 @@ def main():
     past_tense_words = load_data('datasets/tpat_484.txt', 'datasets/ipat_484_past.txt')
 
     # get word distribution based on frequency
-    distribution = create_distribution()
+    distribution = create_distribution(sample_indices=indices)
 
     # get testing sets of regular, irregular verbs
     regular_ipat = get_regular_verbs(present_tense_words)
@@ -59,7 +62,7 @@ def main():
     all_verbs_ipat = get_all_verbs(present_tense_words)
     all_verbs_tpat = get_all_verbs(past_tense_words,past=True)
 
-    [ipats,tpats] = create_patterns(training_size, distribution, present_tense_words, past_tense_words)
+    [ipats,tpats] = create_patterns(training_size, distribution, present_tense_words, past_tense_words, sample_indices=indices)
 
     ipats_binaries = ipats.values()
     tpats_binaries = tpats.values()
@@ -69,12 +72,12 @@ def main():
 
     canonical = DirectMappingNN(input_size,
                                 output_size=output_size,
-                                l_rate=.1)
+                                l_rate=.02)
     memory = Alcove(input_size, output_size, exemplar_nodes, r=2.0,
-                    o_lrate=.2, a_lrate=.1)
+                    o_lrate=.02, a_lrate=.02)
 
     memory_net = MemoryNetwork(canonical, memory, input_size, output_size,
-                               error_func="cross_entropy", l_rate=.1)
+                               error_func="cross_entropy", l_rate=.02)
     # set both routes on
     MemoryNetwork.CANONICAL_ON = True
     MemoryNetwork.MEMORY_ON = True
