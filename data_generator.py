@@ -190,6 +190,26 @@ def test(net, ipats, tpats):
     return float(1-miss/length)
 
 
+def test_accuracy(net, ipat, tpat, phoneme_mapping):
+    phonemes = net.predict_phonemes(ipat, phoneme_mapping)
+    # print "guess: " + str(phonemes)
+    tpat_matrix = np.reshape(tpat, (10, 16))
+    output_string = ""
+    for i in range(10):
+        v = tpat_matrix[i, :]
+        for key in phoneme_mapping:
+            if (phoneme_mapping[key] == v).all():
+                output_string = output_string + str(key)
+    # print "correct" + output_string
+    if phonemes == output_string:
+        return 1
+    else:
+        return 0
+
+
+
+
+
 
 
 

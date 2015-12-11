@@ -4,10 +4,10 @@ import pickle
 
 """Global utility methods.
 """
-
+PHONEME_MAPPING = None
 
 def load_phoneme_mapping():
-    global phoneme_mapping
+    global PHONEME_MAPPING
     f = file('datasets/phonemeslabel.csv', 'r')
     line = f.readline()
     labels = [c.rsplit()[0] for c in line.split(',')]
@@ -16,6 +16,8 @@ def load_phoneme_mapping():
     phoneme_mapping = {}
     for i, l in enumerate(labels):
         phoneme_mapping[l] = data_vectors[i]
+
+    PHONEME_MAPPING = phoneme_mapping
     return phoneme_mapping
 
 
@@ -28,7 +30,6 @@ def most_similar_phoneme_l2(input_vector, phoneme_mapping):
     for key in phoneme_mapping:
         p = phoneme_mapping[key]
         if (p.T == input_vector).all():
-            print "equality"
             return key
         squares = np.power(input_vector-p.T, 2)
         diff = np.sqrt(np.sum(squares))
@@ -47,7 +48,6 @@ def most_similar_phoneme_l1(input_vector, phoneme_mapping):
     for key in phoneme_mapping:
         p = phoneme_mapping[key]
         if (p.T == input_vector).all():
-            print "equality"
             return key
         diff = input_vector-p.T
         diff = np.sum(np.abs(diff))

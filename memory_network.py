@@ -92,7 +92,7 @@ class MemoryNetwork:
         terr = 0
         self.err_per_epoch = []
         for n in range(nepochs):
-            if (n+1) % 1 == 0:
+            if (n+1) % 50 == 0:
                 print 'saving'
                 s = 'net_at_'+str(n+1)
                 save_net(s, self)
@@ -113,7 +113,7 @@ class MemoryNetwork:
             return terr
 
 
-    def predict_phonemes(self, input):
+    def predict_phonemes(self, input, phoneme_mapping):
         """ Return a string of phonemes for the past tense predicted by the network for
         a given input (binary vector encoding). Since it is likely
         that each slot will not be exactly equal to a phoneme encoding,
@@ -121,12 +121,10 @@ class MemoryNetwork:
         in the list of phoneme codings.
 
         Note there are two different similarity metrics,
-        l1-norm and dot product. Currently using l1-norm
-        but should play around with this later...
+        l2-norm and dot product. Currently using l2-norm
         """
         self.forward_pass(input)
         out = np.rint(self.output)
-        print out
         prediction_vectors = [out[i:i+16] for i in range(0, 160, 16)]
-        phonemes = [most_similar_phoneme_l1(v) for v in prediction_vectors]
-        return " ".join(phonemes)
+        phonemes = [most_similar_phoneme_l2(v, phoneme_mapping) for v in prediction_vectors]
+        return "".join(phonemes)
