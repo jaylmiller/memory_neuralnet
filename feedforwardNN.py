@@ -32,7 +32,7 @@ class DirectMappingNN:
 
         # weight matrices
 
-        self.W_oh = np.random.normal(loc=0, scale=.5,
+        self.W_oi = np.random.normal(loc=0, scale=.5,
                                      size=(output_size, input_size))
         # no bias vector on output because it's in the memory_network
 

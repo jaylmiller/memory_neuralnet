@@ -5,6 +5,7 @@ import pickle
 """Global utility methods.
 """
 PHONEME_MAPPING = None
+BECNHMARK_PER = 50 # benchmarks at every 50 epoch
 
 def load_phoneme_mapping():
     global PHONEME_MAPPING

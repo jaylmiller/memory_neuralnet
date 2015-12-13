@@ -30,79 +30,6 @@ def create_distribution(sample_indices=None):
     f.close()
     return freq_sequence
 
-def get_regular_verbs(file_data,past=False):
-    """ Creates a dictionary containing all regular verbs
-    with their binary encodings
-
-    args:
-        file_data - file containing words and their encodings
-        past -  if true then get the past tense of the regular verbs,
-                if false then get present tense of regular verbs
-    returns
-        regular_verbs - dictionary containing orthographic and
-                        phonetic representation of the regulars
-    """
-    f = file('datasets/verblist_freqs.csv','r')
-    regular_verbs = {}
-    index_counter = 0
-    for line in f:
-        vals = [i.rstrip() for i in line.split(',')]
-        if vals[-3] == "0":
-            if past:
-                regular_verbs[vals[1].lower()] = file_data[vals[1].lower()]
-            else:
-                regular_verbs[vals[0].lower()] = file_data[vals[0].lower()]
-    f.close()
-    return regular_verbs
-
-def get_irregular_verbs(file_data,past=False):
-    """ Creates a dictionary containing all irregular verbs
-    with their binary encodings
-
-    args:
-        file_data - file containing words and their encodings
-        past -  if true then get the past tense of the irregular verbs,
-                if false then get present tense of irregular verbs
-    returns
-        irregular_verbs - dictionary containing orthographic and
-                        phonetic representation of the irregulars
-    """
-    f = file('datasets/verblist_freqs.csv','r')
-    irregular_verbs = {}
-    for line in f:
-        vals = [i.rstrip() for i in line.split(',')]
-        if vals[-3] == "1":
-            if past:
-                irregular_verbs[vals[1].lower()] = file_data[vals[1].lower()]
-            else:
-                irregular_verbs[vals[0].lower()] = file_data[vals[0].lower()]
-    f.close()
-    return irregular_verbs
-
-def get_all_verbs(file_data,past=False):
-    """ Creates a dictionary containing all verbs
-    with their binary encodings
-
-    args:
-        file_data - file containing words and their encodings
-        past -  if true then get the past tense of all verbs,
-                if false then get present tense of all verbs
-    returns
-        irregular_verbs - dictionary containing orthographic and
-                        phonetic representation of all verbs
-    """
-    f = file('datasets/verblist_freqs.csv','r')
-    all_verbs = {}
-    for line in f:
-        vals = [i.rstrip() for i in line.split(',')]
-        if past:
-            all_verbs[vals[1].lower()] = file_data[vals[1].lower()]
-        else:
-            all_verbs[vals[0].lower()] = file_data[vals[0].lower()]
-    f.close()
-    return all_verbs
-
-
 def get_indices_from_dist(n, dist, sample_indices=None):
     """ Get randomly sampled indices according to distribution
 
@@ -121,78 +48,36 @@ def get_indices_from_dist(n, dist, sample_indices=None):
             indices.append(sample_indices[idx - 1])
     return indices
 
-def create_patterns(n, dist, file_data_present,file_data_past, sample_indices=None):
-    """ Creates ipat and tpat training patterns given the data for both
-    present and past tense verbs.
-    args:
-        n - pattern size
-        dist - distribution of words
-        file_data_present - file data containing present tense words with vector encodings
-        file_data_past - file data containing past tense words with vector encodings
 
-    return:
-        ipats - a dictionary containing the present tense verbs as keys and vector encodings as values
-        tpats - a dictionary containing the past tense verbs as keys and vector encodings as values
-    """
-    indices = get_indices_from_dist(n,dist);
-    ipat = {}
-    tpat = {}
-    present_keys = file_data_present.keys()
-    past_keys = file_data_past.keys()
-    for index in indices:
-        ipat[present_keys[index]] = file_data_present[present_keys[index]]
-        tpat[past_keys[index]] = file_data_past[past_keys[index]]
-    return [ipat,tpat]
+def load_ipat_tpat(binary_file_i, binary_file_t):
+    fi = open(str(binary_file_i), 'r')
+    ft = open(str(binary_file_t), 'r')
+    ipats = []
+    tpats = []
+    for l in fi:
+        v = np.matrix(map(int, l.rstrip().split(","))).T
+        ipats.append(v)
+    for l in ft:
+        v = np.matrix(map(int, l.rstrip().split(","))).T
+        tpats.append(v)
 
-def load_data(binary, ortho):
-    """ Load dataset
-    binary - binary vector representation of verbs
-    ortho - the words themselves
-
-    return:
-    ipat - a dictionary with the words as keys and binary vectors as values
-    """
-    bin_repres = open(binary)
-    orth_repres = open(ortho)
-    num_lines = sum(1 for line in orth_repres)  # get number of lines
-
-    orth_repres.close()  # highly inefficient, any other way?
-    orth_repres = open(ortho)
-
-    ipats = {}
-    for line in range(num_lines):
-        bin = np.matrix(map(int, bin_repres.readline().rstrip().split(","))).T
-        orth = orth_repres.readline().rstrip()
-        ipats[orth] = bin
-    return ipats
+    return (ipats, tpats)
 
 
-def test(net, ipats, tpats):
-    """ Calculates the mean accuracy of outputs and their target patterns.
-    Runs ipat through network, calculates the difference of predicted past
-    with its actual past tense. If the difference betweenthe two is more
-    half of the elements in their vector encodings than increment miss.
-    Otherwise we say it's a hit.
-
-    """
-    length = len(ipats)
-    difference = []
-    for i in range(length):
-        net.forward_pass(ipats[i])
-        output = np.round(net.output)
-        difference.append(tpats[i]-output)
-    accuracies = np.absolute(difference)
-    miss = 0
-    for v in accuracies:
-        if np.sum(v) >= len(v)/2:
-            miss += 1
-
-    return float(1-miss/length)
+def load_labels():
+    f = file('datasets/verblist_freqs.csv', 'r')
+    labels_list = []
+    for l in f:
+        vals = [i.rstrip() for i in l.split(',')]
+        labels_list.append(int(vals[-3]))
+    return labels_list
 
 
 def test_accuracy(net, ipat, tpat, phoneme_mapping):
+    """Get accuracy for single ipat-tpat pair
+    """
     phonemes = net.predict_phonemes(ipat, phoneme_mapping)
-    print "guess: " + str(phonemes)
+    print phonemes
     tpat_matrix = np.reshape(tpat, (10, 16))
     output_string = ""
     for i in range(10):
@@ -200,16 +85,34 @@ def test_accuracy(net, ipat, tpat, phoneme_mapping):
         for key in phoneme_mapping:
             if (phoneme_mapping[key] == v).all():
                 output_string = output_string + str(key)
-    print "correct" + output_string
     if phonemes == output_string:
         return 1
     else:
         return 0
 
+def test_accuracy_reg(net, ipat, tpat, phoneme_mapping):
+    """Get accuracy for single ipat-tpat pair
+    """
+    phonemes = net.predict_phonemes(ipat, phoneme_mapping)
+    # print phonemes
+    tpat_matrix = np.reshape(tpat, (10, 16))
+    output_string = ""
+    for i in range(10):
+        v = tpat_matrix[i, :]
+        for key in phoneme_mapping:
+            if (phoneme_mapping[key] == v).all():
+                output_string = output_string + str(key)
+    if phonemes[-2:] == output_string[-2:]:
+        return 1
+    else:
+        return 0
 
 
-
-
-
-
-
+def get_mean_accuracy(net, ipats_binaries, tpats_binaries, phoneme_mapping):
+    t = 0
+    input_size = len(ipats_binaries)
+    for i in range(input_size):
+        ipat = ipats_binaries[i]
+        tpat = tpats_binaries[i]
+        t = t + test_accuracy_reg(net, ipat, tpat, phoneme_mapping)
+    return float(t)/float(input_size)

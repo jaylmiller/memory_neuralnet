@@ -15,7 +15,7 @@ import random
 class Alcove:
 
     def __init__(self, input_size, output_size, hidden_size,
-                 spec=1.0, r=1.0, q=1.0, o_lrate=0.05, a_lrate=0.05):
+                 spec=1.0, r=1.0, q=1.0, o_lrate=0.1, a_lrate=0.1, l_decay=.95):
         """
         args:
             input_size - size of input vectors
@@ -32,13 +32,14 @@ class Alcove:
         self.hidden_size = hidden_size
         self.o_lrate = o_lrate
         self.a_lrate = a_lrate
+        self.l_decay = l_decay
 
         # Hidden layer, randomly sample with replacement from data
-        f = file('datasets/ipat_484.txt', 'r')
-        data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f]
-        data_vectors = data_vectors[:100]
-        random.shuffle(data_vectors)
-        self.node_vectors = np.vstack(tuple(data_vectors[:self.hidden_size]))
+        # f = file('datasets/ipat_484.txt', 'r')
+        # data_vectors = [np.matrix(map(int, line.rstrip().split(","))) for line in f]
+        # data_vectors = data_vectors[:100]
+        # random.shuffle(data_vectors)
+        # self.node_vectors = np.vstack(tuple(data_vectors[:self.hidden_size]))
         # print np.vstack((data_vectors[0], data_vectors[1])).shape
         # self.node_vectors = data_vectors[:self.hidden_size]
         self.node_vectors = np.matrix(
@@ -70,7 +71,7 @@ class Alcove:
         self.hidden_activation_function()
         self.output_net()
 
-    def backward_pass(self, dE_dOut):
+    def backward_pass(self, dE_dOut, ep_num = None):
         """ Perform backward pass.
 
         "backward_pass" should be run in conjunction with "forward_pass"
@@ -90,6 +91,16 @@ class Alcove:
         #    print "equal"
         self.assoc_weights += delta_assoc
         self.att_strengths += delta_atten2
+        # above_zeros = np.array(self.att_strengths > 0, dtype=int)
+        # self.att_strengths = np.multiply(self.att_strengths, above_zeros)
+        if ep_num is not None:
+            if ep_num % 50 == 0:
+                self.o_lrate = self.o_lrate*.95
+                self.a_lrate = self.a_lrate*.95
+        if self.o_lrate < .005:
+            self.o_lrate = .005
+            self.a_lrate = .005
+
 
     def assoc_learn_sigmoid(self, dE_dOut):
         """ Learn values for updating association weights

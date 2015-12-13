@@ -31,6 +31,7 @@ class MemoryNetwork:
         self.activ_func = activ_func
         self.l_rate = l_rate
         self.error_func = error_func
+        self.memory_net_in = []
 
     def forward_pass(self, input):
         """Forward pass through network.
@@ -44,14 +45,16 @@ class MemoryNetwork:
             self.output = self.output + self.canonical_route.output
         if MemoryNetwork.MEMORY_ON:
             self.memory_route.forward_pass(input)
+            self.memory_net_in.append(self.memory_route.a_out)
             self.output = self.output + self.memory_route.a_out
         self.output = self.activ_func(self.output + self.B_o)
+
         # clamp the outputs of the two networks to the output of the
         # parent network
         self.canonical_route.output = self.output
         self.memory_route.a_out = self.output
 
-    def backward_pass(self, target):
+    def backward_pass(self, target, ep_num=None):
         """Backward pass. Update bias vector for output,
         call backpropogation on the individual networks.
 
@@ -79,7 +82,7 @@ class MemoryNetwork:
         if MemoryNetwork.CANONICAL_ON:
             self.canonical_route.backward_pass(dE_dOut)
         if MemoryNetwork.MEMORY_ON:
-            self.memory_route.backward_pass(dE_dOut)
+            self.memory_route.backward_pass(dE_dOut, ep_num)
         return error
 
     def train(self, ipats, tpats, nepochs, print_error=True):
@@ -94,14 +97,14 @@ class MemoryNetwork:
         for n in range(nepochs):
             if (n+1) % 50 == 0:
                 print 'saving'
-                s = 'net_at_'+str(n+1)
+                s = 'alcove_net_at_'+str(n+1)
                 save_net(s, self)
             epocherr = 0
             for i in range(size):
                 ipat = ipats[i]
                 tpat = tpats[i]
                 self.forward_pass(ipat)
-                error = self.backward_pass(tpat)
+                error = self.backward_pass(tpat, ep_num=n+1)
                 epocherr = epocherr + error
             epocherr = epocherr/len(tpat)
             if print_error:
